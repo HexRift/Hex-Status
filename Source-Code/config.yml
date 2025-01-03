@@ -1,0 +1,35 @@
+System:
+  name: "Hex Status" # Name of the service
+  description: "Check real-time updates on the status of Hex Modz services," # Description of the service
+  Port: 3000  # Port to run on
+  refresh_interval: 1 # seconds
+  webhook_url: "https://discord.com/api/webhooks/1323940305837359210/shfEHB3LC8SpvsX11XRBbJOYXZ0XexvT_FvJmN4MPw7HzyrUewgkKDvWt2KljXAA5aX2" # Webhook URL
+  thumbnail_url: "https://hexmodz.com/Logo-t1.png"  
+  footer: "© 2024 - 2025 Hex Modz" 
+
+theme:
+  primary: "#ff0000"  # Red
+  secondary: "#000000" # Black
+  accent: "#ff3333"
+  background: "#1a1a1a"
+
+services:
+  - name: "Website"
+    type: "http"
+    url: "https://hexmodz.com"
+    port: 443
+
+  - name: "Hex Share"
+    type: "http"
+    url: "https://share.hexmodz.com"
+    port: 443
+
+  - name: "Hex Auth (Dashboard)"
+    type: "http"
+    url: "https://dash.hexmodz.com"
+    port: 443
+
+  - name: "Hex Auth (API)"
+    type: "http"
+    url: "https://api.hexmodz.com"
+    port: 443

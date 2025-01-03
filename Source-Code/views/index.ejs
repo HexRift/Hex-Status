@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<%= description %>">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <meta property="og:title" content="<%= title %>" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="<%= title %>" />
+    <meta property="og:image" content="</public/favicon.ico" />
+    <meta property="og:description" content="<%= description %>" />
+    <meta name="theme-color" content="#FF0000">
+    <meta property="og:site_name" content="<%= title %>" />
+    <meta property="og:locale" content="en_US" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/socket.io.client.js"></script>
+    <style>
+        :root {
+            --primary: <%= config.theme.primary %>;
+            --secondary: <%= config.theme.secondary %>;
+            --accent: <%= config.theme.accent %>;
+            --background: <%= config.theme.background %>;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><%= title %></h1>
+            <p class="header-description"><%= description %></p>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="overall-uptime">0%</div>
+                <div class="stat-label">Overall Uptime</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="online-count">0</div>
+                <div class="stat-label">Services Online</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value"><%= config.services.length %></div>
+                <div class="stat-label">Total Services</div>
+            </div>
+        </div>
+          <div class="services-list">
+              <% config.services.forEach((service) => { %>
+                  <div class="service-item" id="service-<%= service.name.replace(/[^a-zA-Z0-9]/g, '-') %>">
+                      <div class="service-info">
+                          <h2><%= service.name %></h2>
+                          <div class="service-meta">
+                              <%= service.type.toUpperCase() %> • <%= service.type === 'http' ? service.url : `${service.host}:${service.port}` %>
+                          </div>
+                      </div>
+                      <div class="uptime-bar">
+                          <div class="uptime-fill" style="width: <%= serviceHistory[service.name] ? ((serviceHistory[service.name].uptime / Math.max(serviceHistory[service.name].checks, 1)) * 100).toFixed(1) : 0 %>%"></div>
+                      </div>
+                      <div class="status-badge <%= serviceHistory[service.name] ? (serviceHistory[service.name].status ? 'status-online' : 'status-offline') : 'status-checking' %>">
+                          <%= serviceHistory[service.name] ? (serviceHistory[service.name].status ? 'Online' : 'Offline') : 'Checking...' %>
+                      </div>
+                  </div>
+              <% }); %>
+          </div>
+      </div>
+</body>
+</html>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-info">
+            <p>© <%= new Date().getFullYear() %> <%= title %></p>
+            <p class="footer-stats">Monitoring <%= config.services.length %> Services</p>
+        </div>
+        <div class="footer-links">
+            <a href="https://github.com/Hex-Modz/" target="_blank" rel="noopener">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+</footer>
