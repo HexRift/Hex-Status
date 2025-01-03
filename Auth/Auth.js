@@ -80,7 +80,7 @@ class AuthClient {
     }
 
     async validateLicense() {
-        const PRODUCT_ID = '38';
+        const PRODUCT_ID = '40';
         const licenseKey = this.#config.get('Auth.license');
         const serverUrl = `https://api.hexmodz.com/api/check/${PRODUCT_ID}`;
         const options = {

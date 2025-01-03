@@ -22,6 +22,7 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -136,6 +137,7 @@ body {
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.9rem;
 }
+
 .footer {
     margin-top: 4rem;
     padding: 2rem 0;
@@ -156,10 +158,6 @@ body {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.footer-stats {
-    font-size: 0.9rem;
-}
-
 .footer-links a {
     color: var(--accent);
     text-decoration: none;
@@ -172,4 +170,38 @@ body {
 
 .footer-links a:hover {
     opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .service-item {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .header-description {
+        font-size: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        text-align: center;
+    }
 }
