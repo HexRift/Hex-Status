@@ -1,13 +1,13 @@
 Auth:
-  license: "kyH0pGfJsXie6swDKqSFkxD1Z3ct1CpU05VKbk_RMTdHz" # Your license key
+  license: "" # Your license key
 
 System:
   name: "Hex Status" # Name of the service
   description: "Check real-time updates on the status of Hex Modz services," # Description of the service
   Port: 3000  # Port to run on
-  refresh_interval: 1 # seconds
-  webhook_url: "https://discord.com/api/webhooks/1323940305837359210/shfEHB3LC8SpvsX11XRBbJOYXZ0XexvT_FvJmN4MPw7HzyrUewgkKDvWt2KljXAA5aX2" # Webhook URL
-  thumbnail_url: "https://hexmodz.com/Logo-t1.png"  
+  refresh_interval: 1000 # seconds
+  webhook_url: "" # Webhook URL
+  thumbnail: ""  
   footer: "© 2024 - 2025 Hex Modz" 
 
 theme:

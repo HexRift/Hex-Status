@@ -1,3 +1,5 @@
+const colors = require("colors");
+
 window.hexSocket = window.hexSocket || io({
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000
@@ -57,7 +59,7 @@ function updateServiceStatus(name, status, history) {
 }
 
 hexSocket.on('connect', () => {
-    console.log('Connected to status server');
+    console.log("[System]".green, "Connected to status server");
 });
 
 hexSocket.on('statusUpdate', (data) => {
@@ -80,9 +82,9 @@ hexSocket.on('statusUpdate', (data) => {
 });
 
 hexSocket.on('disconnect', () => {
-    console.log('Disconnected from status server');
+    console.log("[System]".red, "Disconnected from status server");
 });
 
 hexSocket.on('error', (error) => {
-    console.error('Socket connection error:', error);
+    console.error("[System]".red, "Socket connection error:", error);
 });
