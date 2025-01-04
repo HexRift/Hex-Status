@@ -2,7 +2,7 @@ System:
   name: "Hex Status" # Name of the service
   description: "Check real-time updates on the status of Hex Modz services," # Description of the service
   Port: 3000  # Port to run on
-  refresh_interval: 1000 # seconds
+  refresh_interval: 120 # seconds
   webhook_url: "" # Webhook URL
   thumbnail: ""  
   footer: "© 2024 - 2025 Hex Modz" 

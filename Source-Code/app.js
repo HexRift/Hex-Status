@@ -233,7 +233,10 @@ async function startServer() {
             }
         
             updateStatuses();
-            setInterval(updateStatuses, config.System.refresh_interval * 1000);
+            setInterval(async () => {
+                await updateStatuses();
+                await sendStatusWebhook(config.services, serviceHistory);
+            }, config.System.refresh_interval * 120);
         
             io.on('connection', (socket) => {
                 socket.emit('statusUpdate', {
