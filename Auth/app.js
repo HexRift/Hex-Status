@@ -165,11 +165,11 @@ async function startServer() {
                     color: onlineCount === totalServices ? 0x00ff00 : 0xff0000,
                     timestamp: new Date(),
                     thumbnail: {
-                        url: config.System.thumbnail_url || 'https://hexmodz.com/Logo-t1.png'
+                        url: config.System.thumbnail
                     },
                     fields: fields,
                     footer: {
-                        iconURL: config.System.thumbnail_url || 'https://hexmodz.com/Logo-t1.png',
+                        iconURL: config.System.thumbnail,
                         text: config.System.footer || '© 2024 - 2025 Hex Modz',
                     }
                 };

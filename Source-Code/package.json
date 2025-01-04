@@ -1,6 +1,6 @@
 {
   "name": "hex-status",
-  "version": "3.0.0",
+  "version": "3.4.5",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -22,6 +22,7 @@
     "js-yaml": "^4.1.0",
     "node-ping": "^0.1.0",
     "nodemailer": "^6.9.16",
+    "ping": "^0.4.4",
     "socket.io": "^4.8.1",
     "yaml": "^2.7.0"
   }

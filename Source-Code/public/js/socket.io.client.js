@@ -1,4 +1,3 @@
-const colors = require("colors");
 
 window.hexSocket = window.hexSocket || io({
     reconnectionAttempts: Infinity,

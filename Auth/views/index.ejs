@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Keep existing meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<%= description %>">
@@ -8,14 +9,7 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <meta property="og:title" content="<%= title %>" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="<%= title %>" />
-    <meta property="og:image" content="</public/favicon.ico" />
-    <meta property="og:description" content="<%= description %>" />
-    <meta name="theme-color" content="#FF0000">
-    <meta property="og:site_name" content="<%= title %>" />
-    <meta property="og:locale" content="en_US" />
+    <!-- Keep other meta tags -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/socket.io.client.js"></script>
     <style>
@@ -24,6 +18,8 @@
             --secondary: <%= config.theme.secondary %>;
             --accent: <%= config.theme.accent %>;
             --background: <%= config.theme.background %>;
+            --online: #4CAF50;
+            --offline: #F44336;
         }
     </style>
 </head>
@@ -48,38 +44,52 @@
                 <div class="stat-label">Total Services</div>
             </div>
         </div>
-          <div class="services-list">
-              <% config.services.forEach((service) => { %>
-                  <div class="service-item" id="service-<%= service.name.replace(/[^a-zA-Z0-9]/g, '-') %>">
-                      <div class="service-info">
-                          <h2><%= service.name %></h2>
-                          <div class="service-meta">
-                              <%= service.type.toUpperCase() %> • <%= service.type === 'http' ? service.url : `${service.host}:${service.port}` %>
-                          </div>
-                      </div>
-                      <div class="uptime-bar">
-                          <div class="uptime-fill" style="width: <%= serviceHistory[service.name] ? ((serviceHistory[service.name].uptime / Math.max(serviceHistory[service.name].checks, 1)) * 100).toFixed(1) : 0 %>%"></div>
-                      </div>
-                      <div class="status-badge <%= serviceHistory[service.name] ? (serviceHistory[service.name].status ? 'status-online' : 'status-offline') : 'status-checking' %>">
-                          <%= serviceHistory[service.name] ? (serviceHistory[service.name].status ? 'Online' : 'Offline') : 'Checking...' %>
-                      </div>
-                  </div>
-              <% }); %>
-          </div>
-      </div>
-</body>
-</html>
 
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-info">
-            <p>© <%= new Date().getFullYear() %> <%= title %></p>
-            <p class="footer-stats">Monitoring <%= config.services.length %> Services</p>
-        </div>
-        <div class="footer-links">
-            <a href="https://github.com/Hex-Modz/" target="_blank" rel="noopener">
-                <i class="fab fa-github"></i> GitHub
-            </a>
+        <div class="services-list">
+            <% config.services.forEach((service) => { %>
+                <div class="service-item" id="service-<%= service.name.replace(/[^a-zA-Z0-9]/g, '-') %>">
+                    <div class="service-header">
+                        <div class="service-info">
+                            <h2><%= service.name %></h2>
+                            <div class="service-meta">
+                                <%= service.type.toUpperCase() %> • <%= service.type === 'http' ? service.url : `${service.host}:${service.port}` %>
+                            </div>
+                        </div>
+                        <div class="service-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Ping</span>
+                                <span class="metric-value" id="ping-<%= service.name %>">
+                                    <%= serviceHistory[service.name]?.responseTime || 0 %>ms
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Uptime</span>
+                                <span class="metric-value" id="uptime-<%= service.name %>">
+                                    <%= ((serviceHistory[service.name]?.uptime / Math.max(serviceHistory[service.name]?.checks, 1)) * 100).toFixed(2) %>%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="status-badge <%= serviceHistory[service.name]?.status ? 'status-online' : 'status-offline' %>">
+                            <%= serviceHistory[service.name]?.status ? 'Online' : 'Offline' %>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
         </div>
     </div>
-</footer>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>&copy; <%= new Date().getFullYear() %> <%= title %></p>
+                <p class="footer-stats">Monitoring <%= config.services.length %> Services</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/Hex-Modz/" target="_blank" rel="noopener">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
