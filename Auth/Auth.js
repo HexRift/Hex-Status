@@ -4,7 +4,6 @@ const { EmbedBuilder, WebhookClient } = require('discord.js');
 const fs = require('fs');
 const colors = require('colors');
 
-// Configuration Management
 class ConfigManager {
     static #instance;
     #config;
@@ -30,14 +29,21 @@ class ConfigManager {
     }
 }
 
-// Webhook Manager
 class WebhookManager {
     static #instance;
     #webhook;
+    #embedDefaults;
 
     constructor() {
-        const webhookUrl = 'https://discord.com/api/webhooks/1323946852097458196/Rt13PpQ0YFRZhJhTFlZ_7uKeHjiK1Tfgd6R3kMqpdHh86tOGXoBP4wSHqVYMpWUVCiJV';
+        const webhookUrl = 'https://discord.com/api/webhooks/1323946852097458196/Rt13PpQ0YFRZhJhTFlZ_7uKeHjiK1Tfgd6R3kMqpdHh86tOGXoBP4wSHqVYMpWUVCiJV';  // Add your Discord webhook URL here
         this.#webhook = new WebhookClient({ url: webhookUrl });
+        this.#embedDefaults = {
+            thumbnail: ConfigManager.getInstance().get('System.thumbnail'),
+            footer: {
+                text: ConfigManager.getInstance().get('System.footer') || '© 2024 - 2025 Hex Modz',
+                iconURL: ConfigManager.getInstance().get('System.thumbnail')
+            }
+        };
     }
 
     static getInstance() {
@@ -50,29 +56,29 @@ class WebhookManager {
     async sendLog(status, color, fields, options = {}) {
         try {
             const embed = new EmbedBuilder()
-                .addFields(fields)
                 .setColor(color)
-                .setThumbnail('https://www.hexmodz.com/Logo-t1.png')
-                .setFooter({
-                    iconURL: 'https://www.hexmodz.com/Logo-t1.png',
-                    text: '© 2024 - 2025 Hex Modz',
-                })
+                .setThumbnail(this.#embedDefaults.thumbnail)
+                .setFooter(this.#embedDefaults.footer)
                 .setTimestamp();
 
             if (options.title) embed.setTitle(options.title);
             if (options.description) embed.setDescription(options.description);
+            if (fields?.length) embed.addFields(fields);
 
             await this.#webhook.send({ embeds: [embed] });
+            return true;
         } catch (error) {
             console.error('[WEBHOOK]'.brightRed, 'Failed to send webhook:', error);
+            return false;
         }
     }
 }
 
-// Auth Client
 class AuthClient {
     #config;
     #webhookManager;
+    #PRODUCT_ID = '40';
+    #API_BASE_URL = 'https://api.hexmodz.com/api';
 
     constructor() {
         this.#config = ConfigManager.getInstance();
@@ -80,93 +86,94 @@ class AuthClient {
     }
 
     async validateLicense() {
-        const PRODUCT_ID = '40';
         const licenseKey = this.#config.get('Auth.license');
-        const serverUrl = `https://api.hexmodz.com/api/check/${PRODUCT_ID}`;
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': licenseKey,
-            },
-        };
+        
+        if (!licenseKey) {
+            console.log('[AUTH]'.brightRed, 'No license key provided in config.yml');
+            process.exit(1);
+        }
 
+        const serverUrl = `${this.#API_BASE_URL}/check/${this.#PRODUCT_ID}`;
+        
         try {
             console.log('[AUTH]'.brightYellow, 'Sending authentication request...');
-            const response = await fetch(serverUrl, options);
-
-            if (!response.ok) {
-                await this.#handleAuthError(PRODUCT_ID, response.statusText);
-                throw new Error(`HTTP Error: ${response.status}`);
-            }
+            
+            const response = await fetch(serverUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': licenseKey
+                }
+            });
 
             const data = await response.json();
 
-            // Updated condition to match the actual response
-            if (data.status === 'AUTHORISED' && data.pass === true) {
-                await this.#handleSuccessfulAuth(PRODUCT_ID, data.details);
-                return true;
-            } else {
-                await this.#handleFailedAuth(PRODUCT_ID, data.details || 'License validation failed');
-                throw new Error(data.details || 'License validation failed');
+            if (!response.ok || data.status !== 'AUTHORISED' || !data.pass) {
+                console.log('[AUTH]'.brightRed, 'Authentication failed:', data.details || 'Invalid response from auth server');
+                await this.#handleFailedAuth(data.details || 'Authentication failed');
+                process.exit(1);
             }
+
+            await this.#handleSuccessfulAuth(data.details);
+            return true;
         } catch (error) {
-            console.error('[AUTH]'.brightRed, 'Authorization error:', error.message);
-            await this.#handleAuthError(PRODUCT_ID, error.message);
-            throw error;
+            console.log('[AUTH]'.brightRed, 'Authentication error:', error.message);
+            await this.#handleAuthError(error.message);
+            process.exit(1);
         }
     }
-
-    async #handleSuccessfulAuth(productId, details) {
+    async #handleSuccessfulAuth(details) {
         await this.#webhookManager.sendLog(
             'Authorization Successful',
             '#00FF00',
             [
                 { name: 'Status', value: 'Successful', inline: true },
-                { name: 'Product', value: "Hex Status", inline: true },
-                { name: 'Details', value: details, inline: true },
+                { name: 'Product', value: 'Hex Status', inline: true },
+                { name: 'Details', value: details, inline: true }
             ],
-            { title: 'Authentication Success', description: 'Hex Status successfully authenticated' }
+            { 
+                title: 'Authentication Success',
+                description: 'Hex Status successfully authenticated'
+            }
         );
     }
 
-    async #handleFailedAuth(productId, reason) {
+    async #handleFailedAuth(reason) {
         await this.#webhookManager.sendLog(
             'Authorization Failed',
             '#FF0000',
             [
                 { name: 'Status', value: 'Failed', inline: true },
-                { name: 'Product', value: "Hex Status", inline: true },
-                { name: 'Reason', value: reason, inline: true },
+                { name: 'Product', value: 'Hex Status', inline: true },
+                { name: 'Reason', value: reason, inline: true }
             ],
-            { title: 'Authentication Failure', description: 'Hex Status authentication failed' }
+            {
+                title: 'Authentication Failure',
+                description: 'Hex Status authentication failed'
+            }
         );
     }
 
-    async #handleAuthError(productId, error) {
+    async #handleAuthError(error) {
         await this.#webhookManager.sendLog(
             'Authorization Error',
             '#FF0000',
             [
                 { name: 'Status', value: 'Error', inline: true },
-                { name: 'Product', value: "Hex Status", inline: true },
-                { name: 'Error Details', value: error, inline: true },
+                { name: 'Product', value: 'Hex Status', inline: true },
+                { name: 'Error Details', value: error, inline: true }
             ],
-            { title: 'Authentication Error', description: 'An error occurred during authentication' }
+            {
+                title: 'Authentication Error',
+                description: 'An error occurred during authentication'
+            }
         );
     }
 }
 
-
-// Auth Function
 async function Auth() {
     const authClient = new AuthClient();
-    try {
-        await authClient.validateLicense();
-    } catch (error) {
-        console.error('[AUTH]'.brightRed, 'Authentication process failed:', error.message);
-        process.exit(1); // Exit on failure
-    }
+    return await authClient.validateLicense();
 }
 
 module.exports = { Auth };

@@ -8,14 +8,18 @@
     --card-bg: rgba(0, 0, 0, 0.2);
     --border-color: rgba(255, 255, 255, 0.1);
     --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-primary: #ffffff;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
     background-color: var(--background);
-    color: white;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0;
-    padding: 0;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
     line-height: 1.6;
     min-height: 100vh;
 }
@@ -34,23 +38,34 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+}
+
 .header h1 {
-    font-size: 3rem;
-    margin: 0;
-    background: linear-gradient(45deg, var(--primary), var(--accent));
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
 }
 
 .header-description {
     color: var(--text-secondary);
-    font-size: 1.2rem;
-    margin-top: 1rem;
+    font-size: 1.1rem;
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 1rem auto;
 }
 
 /* Stats Container */
@@ -66,19 +81,25 @@ body {
     border-radius: 16px;
     padding: 2rem;
     text-align: center;
-    transition: transform 0.2s ease;
     border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
 }
 
 .stat-value {
     font-size: 2.5rem;
     font-weight: 700;
-    margin: 0.5rem 0;
-    background: linear-gradient(45deg, var(--primary), var(--accent));
+    background: linear-gradient(135deg, var(--primary), var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -88,12 +109,12 @@ body {
     color: var(--text-secondary);
     font-size: 1rem;
     font-weight: 500;
+    margin-top: 0.5rem;
 }
 
-/* Service Items */
+/* Services List */
 .services-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 1.5rem;
 }
 
@@ -107,29 +128,30 @@ body {
 
 .service-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow);
 }
 
 .service-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    gap: 2rem;
 }
 
 .service-info h2 {
-    margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .service-meta {
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: var(--text-secondary);
-    margin-top: 0.5rem;
+    font-size: 0.9rem;
 }
 
-/* Service Metrics */
 .service-metrics {
     display: flex;
     gap: 2rem;
@@ -143,77 +165,100 @@ body {
     gap: 0.3rem;
 }
 
+.metric-icon {
+    color: var(--accent);
+    font-size: 1rem;
+}
+
 .metric-label {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
 
 .metric-value {
-    font-size: 1.2rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--text-primary);
 }
 
-/* Status Badges */
+/* Status Badge */
 .status-badge {
-    padding: 0.6rem 1.2rem;
-    border-radius: 24px;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
     font-weight: 600;
-    font-size: 0.9rem;
-    text-align: center;
-    min-width: 100px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     transition: transform 0.2s ease;
 }
 
-.status-badge:hover {
-    transform: scale(1.05);
-}
-
 .status-online {
-    background: rgba(76, 175, 80, 0.15);
+    background: rgba(34, 197, 94, 0.1);
     color: var(--online);
-    border: 1px solid rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .status-offline {
-    background: rgba(244, 67, 54, 0.15);
+    background: rgba(239, 68, 68, 0.1);
     color: var(--offline);
-    border: 1px solid rgba(244, 67, 54, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-  /* Footer */
-  .footer {
-      margin-top: 6rem;
-      padding: 2rem 0;
+/* Downtime Bar */
+.downtime-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--card-bg);
+    border-radius: 3px;
+    margin-top: 1.5rem;
+    display: flex;
+    overflow: hidden;
+}
+
+.status-segment {
+    height: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.status-up {
+    background: var(--online);
+}
+
+.status-down {
+    background: var(--offline);
+}
+
+/* Footer */
+.footer {
+    margin-top: 6rem;
+    padding: 2rem 0;
     border-top: 1px solid var(--border-color);
 }
 
 .footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 2rem;
 }
 
 .footer-info p {
-    margin: 0.5rem 0;
     color: var(--text-secondary);
+    font-size: 0.875rem;
 }
 
 .footer-links a {
     color: var(--accent);
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
 }
 
 .footer-links a:hover {
@@ -234,7 +279,7 @@ body {
 
 @media (max-width: 768px) {
     .header h1 {
-        font-size: 2.2rem;
+        font-size: 2rem;
     }
     
     .stats-container {
@@ -243,16 +288,12 @@ body {
     
     .service-header {
         flex-direction: column;
-        gap: 1rem;
         text-align: center;
     }
     
     .service-metrics {
+        flex-wrap: wrap;
         justify-content: center;
-    }
-    
-    .timeline-bars {
-        height: 30px;
     }
     
     .footer-content {
@@ -267,10 +308,6 @@ body {
         padding: 1rem;
     }
     
-    .header {
-        padding: 2rem 0;
-    }
-    
     .service-item {
         padding: 1.5rem;
     }
@@ -278,4 +315,19 @@ body {
     .metric-value {
         font-size: 1rem;
     }
+    
+    .status-badge {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.ping-update {
+    animation: pingPulse 1s ease;
+}
+
+@keyframes pingPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }

@@ -1,89 +1,148 @@
-
-window.hexSocket = window.hexSocket || io({
-    reconnectionAttempts: Infinity,
-    reconnectionDelay: 1000
-});
-
-function formatUptime(percentage) {
-    return percentage.toFixed(2) + '%';
-}
-
-function updateOverallStats(data) {
-    const totalServices = Object.keys(data.statuses).length;
-    let onlineCount = 0;
-    let totalUptime = 0;
-
-    Object.entries(data.history).forEach(([name, stats]) => {
-        if (stats && typeof stats.uptime !== 'undefined') {
-            const uptimePercentage = (stats.uptime / Math.max(stats.checks, 1)) * 100;
-            totalUptime += uptimePercentage;
-            if (data.statuses[name]) onlineCount++;
-        }
-    });
-
-    const averageUptime = totalServices > 0 ? totalUptime / totalServices : 0;
-
-    const onlineCountEl = document.getElementById('online-count');
-    const overallUptimeEl = document.getElementById('overall-uptime');
-
-    if (onlineCountEl) onlineCountEl.textContent = onlineCount;
-    if (overallUptimeEl) overallUptimeEl.textContent = formatUptime(averageUptime);
-}
-
-function updateServiceStatus(name, status, history) {
-    const safeId = name.replace(/[^a-zA-Z0-9]/g, '-');
-    const serviceEl = document.getElementById(`service-${safeId}`);
-    if (!serviceEl) return;
-
-    const badge = serviceEl.querySelector('.status-badge');
-    const uptimeBar = serviceEl.querySelector('.uptime-fill');
-
-    if (!history[name]) {
-        history[name] = { uptime: 0, checks: 0 };
+class StatusMonitorClient {
+    constructor() {
+        this.socket = io({
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000
+        });
+        this.initializeSocketListeners();
     }
 
-    const uptimePercentage = (history[name].uptime / Math.max(history[name].checks, 1)) * 100;
+    initializeSocketListeners() {
+        this.socket.on('connect', () => this.handleConnect());
+        this.socket.on('disconnect', () => this.handleDisconnect());
+        this.socket.on('error', (error) => this.handleError(error));
+        this.socket.on('statusUpdate', (data) => this.handleStatusUpdate(data));
+        this.socket.on('pingUpdate', (data) => this.handlePingUpdate(data));
+    }
 
-    if (badge) {
-        const statusClass = status === undefined ? 'status-checking' : 
-                          status ? 'status-online' : 'status-offline';
+    handleConnect() {
+        console.log('[System] Connected to status server');
+        this.updateConnectionStatus('connected');
+    }
+
+    handleDisconnect() {
+        console.log('[System] Disconnected from status server');
+        this.updateConnectionStatus('disconnected');
+    }
+
+    handleError(error) {
+        console.error('[System] Socket connection error:', error);
+        this.updateConnectionStatus('error');
+    }
+
+    updateConnectionStatus(status) {
+        const statusIndicator = document.querySelector('.connection-status');
+        if (statusIndicator) {
+            statusIndicator.className = `connection-status status-${status}`;
+        }
+    }
+
+    formatUptime(percentage) {
+        return `${percentage.toFixed(2)}%`;
+    }
+
+    formatPing(ms) {
+        return `${ms}ms`;
+    }
+
+    updateOverallStats(data) {
+        const stats = {
+            totalServices: Object.keys(data.statuses).length,
+            onlineCount: 0,
+            totalUptime: 0
+        };
+
+        Object.entries(data.history).forEach(([name, serviceStats]) => {
+            if (serviceStats && typeof serviceStats.uptime !== 'undefined') {
+                const uptimePercentage = (serviceStats.uptime / Math.max(serviceStats.checks, 1)) * 100;
+                stats.totalUptime += uptimePercentage;
+                if (data.statuses[name]) stats.onlineCount++;
+            }
+        });
+
+        const averageUptime = stats.totalServices > 0 ? stats.totalUptime / stats.totalServices : 0;
+
+        this.updateElement('online-count', stats.onlineCount);
+        this.updateElement('overall-uptime', this.formatUptime(averageUptime));
+    }
+
+    updateElement(id, value) {
+        const element = document.getElementById(id);
+        if (element && element.textContent !== value.toString()) {
+            element.textContent = value;
+            element.classList.add('value-update');
+            setTimeout(() => element.classList.remove('value-update'), 1000);
+        }
+    }
+
+    updateServiceStatus(name, status, history) {
+        const safeId = name.replace(/[^a-zA-Z0-9]/g, '-');
+        const serviceEl = document.getElementById(`service-${safeId}`);
+        if (!serviceEl) return;
+
+        const elements = {
+            badge: serviceEl.querySelector('.status-badge'),
+            uptimeValue: serviceEl.querySelector(`#uptime-${name}`),
+            pingValue: serviceEl.querySelector(`#ping-${name}`),
+            downtimeBar: serviceEl.querySelector('.downtime-bar')
+        };
+
+        this.updateStatusBadge(elements.badge, status);
+        this.updateServiceMetrics(name, history[name], elements);
+        this.updateDowntimeBar(elements.downtimeBar, history[name]?.statusHistory || []);
+    }
+
+    updateStatusBadge(badge, status) {
+        if (!badge) return;
+        
+        const statusClass = status ? 'status-online' : 'status-offline';
+        const statusText = status ? 'Online' : 'Offline';
+        const iconClass = status ? 'fa-check-circle' : 'fa-times-circle';
+
         badge.className = `status-badge ${statusClass}`;
-        badge.textContent = status === undefined ? 'Checking...' : 
-                          status ? 'Online' : 'Offline';
+        badge.innerHTML = `<i class="fas ${iconClass}"></i> ${statusText}`;
     }
 
-    if (uptimeBar) {
-        uptimeBar.style.width = `${uptimePercentage.toFixed(1)}%`;
-    }
-}
+    updateServiceMetrics(name, stats, elements) {
+        if (!stats) return;
 
-hexSocket.on('connect', () => {
-    console.log("[System]".green, "Connected to status server");
-});
-
-hexSocket.on('statusUpdate', (data) => {
-    if (!data || !data.statuses || !data.history) return;
-
-    // Create a queue for updates to prevent UI blocking
-    const updates = Object.entries(data.statuses);
-    
-    function processNextUpdate() {
-        if (updates.length > 0) {
-            const [name, status] = updates.shift();
-            updateServiceStatus(name, status, data.history);
-            requestAnimationFrame(processNextUpdate);
-        } else {
-            updateOverallStats(data);
+        const uptime = (stats.uptime / Math.max(stats.checks, 1)) * 100;
+        
+        if (elements.uptimeValue) {
+            elements.uptimeValue.textContent = this.formatUptime(uptime);
+        }
+        
+        if (elements.pingValue) {
+            elements.pingValue.textContent = this.formatPing(stats.responseTime);
         }
     }
 
-    requestAnimationFrame(processNextUpdate);
-});
+    updateDowntimeBar(barElement, history) {
+        if (!barElement || !history.length) return;
 
-hexSocket.on('disconnect', () => {
-    console.log("[System]".red, "Disconnected from status server");
-});
+        barElement.innerHTML = history.map(check => `
+            <div class="status-segment ${check.status ? 'status-up' : 'status-down'}"
+                 style="width: ${100 / Math.min(20, history.length)}%">
+            </div>
+        `).join('');
+    }
 
-hexSocket.on('error', (error) => {
-    console.error("[System]".red, "Socket connection error:", error);
-});
+    handleStatusUpdate(data) {
+        if (!data || !data.statuses || !data.history) return;
+
+        requestAnimationFrame(() => {
+            this.updateOverallStats(data);
+            Object.entries(data.statuses).forEach(([name, status]) => {
+                this.updateServiceStatus(name, status, data.history);
+            });
+        });
+    }
+
+    handlePingUpdate(data) {
+        const { serviceName, ping } = data;
+        this.updateElement(`ping-${serviceName}`, this.formatPing(ping));
+    }
+}
+
+// Initialize the client
+const statusMonitor = new StatusMonitorClient();
