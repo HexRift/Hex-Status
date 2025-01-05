@@ -271,7 +271,9 @@ class StatusMonitor {
 
         const PORT = this.config.System.Port || 4000;
         http.listen(PORT, () => {
-            console.log("[System]".green, "Server running on port:", `${PORT}`);
+            console.log("[System]".green, "Hex Status:", 'is loading');
+            console.log("[System]".cyan, "Version:", `${config.System.version}`);
+            console.log("[System]".yellow, "Hex Status:", `running on port ${PORT}`);   
         });
     }
 }

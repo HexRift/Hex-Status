@@ -10,6 +10,7 @@ System:
   webhook_url: "https://discord.com/api/webhooks/1325197174815981598/G0-1GWkQuwtZOpUWPXrMaAoomksFWW0DEBex0A6yRizUR0hA-64MQfNSJ9RvofeyGSxl" # Webhook URL
   thumbnail: "https://hexmodz.com/assets/logo.png" # Thumbnail URL
   footer: "© 2024 - 2025 Hex Modz" 
+  version: "4.0.0"
 
 theme:
   primary: "#ff0000"  # Red
