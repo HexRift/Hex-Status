@@ -3,13 +3,16 @@
     --secondary: <%= config.theme.secondary %>;
     --accent: <%= config.theme.accent %>;
     --background: <%= config.theme.background %>;
-    --online: #4CAF50;
-    --offline: #F44336;
-    --card-bg: rgba(0, 0, 0, 0.2);
-    --border-color: rgba(255, 255, 255, 0.1);
-    --text-secondary: rgba(255, 255, 255, 0.7);
+    --online: #22c55e;
+    --offline: #ef4444;
+    --card-bg: rgba(0, 0, 0, 0.25);
+    --border-color: rgba(255, 255, 255, 0.12);
+    --text-secondary: rgba(255, 255, 255, 0.75);
     --text-primary: #ffffff;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --card-hover-bg: rgba(255, 255, 255, 0.03);
 }
+
 * {
     margin: 0;
     padding: 0;
@@ -17,25 +20,38 @@
 }
 
 body {
-    background-color: var(--background);
+    background: linear-gradient(135deg, var(--background), rgba(0, 0, 0, 0.95));
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
     min-height: 100vh;
+    backdrop-filter: blur(10px);
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2.5rem;
 }
 
-/* Header Styles */
+/* Enhanced Header */
 .header {
     text-align: center;
     margin-bottom: 4rem;
-    padding: 3rem 0;
+    padding: 3.5rem 0;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
 }
 
 .logo-container {
@@ -53,12 +69,14 @@ body {
 }
 
 .header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: 800;
     background: linear-gradient(135deg, var(--primary), var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .header-description {
@@ -68,26 +86,29 @@ body {
     margin: 1rem auto;
 }
 
-/* Stats Container */
+/* Enhanced Stats Cards */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-bottom: 4rem;
+    gap: 2.5rem;
+    margin-bottom: 4.5rem;
 }
 
 .stat-card {
     background: var(--card-bg);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: 20px;
+    padding: 2.5rem;
     text-align: center;
     border: 1px solid var(--border-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(12px);
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
     box-shadow: var(--shadow);
+    background: var(--card-hover-bg);
+    border-color: var(--accent);
 }
 
 .stat-icon {
@@ -118,17 +139,20 @@ body {
     gap: 1.5rem;
 }
 
+/* Enhanced Service Items */
 .service-item {
     background: var(--card-bg);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: 20px;
+    padding: 2.5rem;
     border: 1px solid var(--border-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(12px);
 }
 
 .service-item:hover {
-    transform: translateY(-3px);
+    transform: translateY(-5px);
     box-shadow: var(--shadow);
+    background: var(--card-hover-bg);
 }
 
 .service-header {
@@ -158,11 +182,17 @@ body {
     align-items: center;
 }
 
-.metric {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
+.service-metrics .metric {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.service-metrics .metric:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
 }
 
 .metric-icon {
@@ -182,12 +212,15 @@ body {
     color: var(--text-primary);
 }
 
-/* Status Badge */
+/* Enhanced Status Badges */
 .status-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 14px;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -230,11 +263,23 @@ body {
     background: var(--offline);
 }
 
-/* Footer */
+/* Enhanced Footer */
 .footer {
-    margin-top: 6rem;
-    padding: 2rem 0;
+    margin-top: 7rem;
+    padding: 3rem 0;
     border-top: 1px solid var(--border-color);
+    position: relative;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
 }
 
 .footer-content {
@@ -255,9 +300,10 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
     transition: all 0.2s ease;
 }
 
@@ -322,12 +368,13 @@ body {
     }
 }
 
-.ping-update {
-    animation: pingPulse 1s ease;
+/* Enhanced Animations */
+@keyframes pingPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes pingPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+.ping-update {
+    animation: pingPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }

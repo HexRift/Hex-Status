@@ -13,8 +13,8 @@ class StatusMonitor {
         this.messageIdFile = 'messageId.json';
         this.serviceHistory = {};
         this.lastMessageId = this.loadMessageId();
-        this.webhook = new WebhookClient({ url: this.config.System.webhook_url });
-        this.pingInterval = 5000;
+        this.webhook = new WebhookClient({ url: this.config.URLs.webhook_url });
+        this.pingInterval = this.config.System.pingInterval; // 5 seconds for ping updates
     }
 
     async authenticate(retries = 3) {
@@ -86,13 +86,16 @@ class StatusMonitor {
             const response = await axios.get(service.url, { timeout: 5000 });
             const pingTime = Date.now() - startTime;
 
+            // Update service history
             this.serviceHistory[service.name].responseTime = pingTime;
 
+            // Emit ping update via Socket.IO
             io.emit('pingUpdate', {
                 serviceName: service.name,
                 ping: pingTime
             });
 
+            // Update Discord embed ping
             await this.updateDiscordEmbedPing(service.name, pingTime);
 
             return pingTime;
@@ -109,6 +112,7 @@ class StatusMonitor {
             const message = await this.webhook.fetchMessage(this.lastMessageId);
             const embed = message.embeds[0];
 
+            // Update ping in online services field
             if (embed.fields[0].name === "🟢 Online Services") {
                 const lines = embed.fields[0].value.split('\n');
                 const updatedLines = lines.map(line => {
@@ -137,7 +141,7 @@ class StatusMonitor {
             description: `**${onlineServices.length}/${this.config.services.length}** services are currently online.`,
             color: onlineServices.length === this.config.services.length ? 0x00ff00 : 0xff0000,
             timestamp: new Date(),
-            thumbnail: { url: this.config.System.thumbnail },
+            thumbnail: { url: this.config.URLs.thumbnail },
             fields: [
                 {
                     name: "🟢 Online Services",
@@ -155,7 +159,7 @@ class StatusMonitor {
                 }
             ],
             footer: {
-                iconURL: this.config.System.thumbnail,
+                iconURL: this.config.URLs.thumbnail,
                 text: this.config.System.footer || '© 2024 - 2025 Hex Modz'
             }
         };
@@ -249,49 +253,54 @@ class StatusMonitor {
 
     async startServer() {
         const authenticated = await this.authenticate();
-        
         if (authenticated) {
-            const app = express();
-            const http = require('http').Server(app);
-            const io = require('socket.io')(http);
+        const app = express();
+        const http = require('http').Server(app);
+        const io = require('socket.io')(http);
 
-            this.initializeServiceHistory();
+        this.initializeServiceHistory();
 
-            app.set('view engine', 'ejs');
-            app.use(express.static('public'));
-            app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/client-dist')));
+        app.set('view engine', 'ejs');
+        app.use(express.static('public'));
+        app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/client-dist')));
 
-            app.get('/', (req, res) => {
-                res.render('index', {
-                    config: this.config,
-                    serviceHistory: this.serviceHistory,
-                    title: this.config.System.name,
-                    description: this.config.System.description
-                });
+        app.get('/', (req, res) => {
+            res.render('index', {
+                config: this.config,
+                serviceHistory: this.serviceHistory,
+                title: this.config.Site.name,
+                description: this.config.Site.description,
+                footer: this.config.Site.footer,
+                github: this.config.URLs.github
+
             });
+        });
 
-            io.on('connection', (socket) => this.emitStatusUpdate(io));
+        io.on('connection', (socket) => this.emitStatusUpdate(io));
 
-            await this.updateStatuses(io);
+        // Initial status update
+        await this.updateStatuses(io);
 
-            setInterval(() => this.updateStatuses(io), this.config.System.refresh_interval * 120);
+        // Full status update interval
+        setInterval(() => this.updateStatuses(io), this.config.System.refresh_interval * 120);
 
-            setInterval(() => {
-                this.config.services.forEach(service => {
-                    if (this.serviceHistory[service.name].status) {
-                        this.updatePingOnly(service, io);
-                    }
-                });
-            }, this.pingInterval);
-
-            const PORT = this.config.System.Port || 4000;
-            http.listen(PORT, () => {
-                console.log("[System]".green, "Hex Status:", 'is loading');
-                console.log("[System]".cyan, "Version:", `${config.System.version}`);
-                console.log("[System]".yellow, "Hex Status:", `running on port ${PORT}`);            
+        // Real-time ping updates for online services
+        setInterval(() => {
+            this.config.services.forEach(service => {
+                if (this.serviceHistory[service.name].status) {
+                    this.updatePingOnly(service, io);
+                }
             });
-        }
+        }, this.pingInterval);
+
+        const PORT = this.config.System.Port || 4000;
+        http.listen(PORT, () => {
+            console.log("[System]".green, "Hex Status:", 'Is loading');
+            console.log("[System]".cyan, "Version:", `${this.config.System.version}`);
+            console.log("[System]".yellow, "Hex Status:", `Running on port ${PORT}`);   
+        });
     }
+}
 }
 
 new StatusMonitor().startServer();

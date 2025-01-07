@@ -12,7 +12,7 @@ class StatusMonitor {
         this.messageIdFile = 'messageId.json';
         this.serviceHistory = {};
         this.lastMessageId = this.loadMessageId();
-        this.webhook = new WebhookClient({ url: this.config.System.webhook_url });
+        this.webhook = new WebhookClient({ url: this.config.URLs.webhook_url });
         this.pingInterval = this.config.System.pingInterval; // 5 seconds for ping updates
     }
 
@@ -122,7 +122,7 @@ class StatusMonitor {
             description: `**${onlineServices.length}/${this.config.services.length}** services are currently online.`,
             color: onlineServices.length === this.config.services.length ? 0x00ff00 : 0xff0000,
             timestamp: new Date(),
-            thumbnail: { url: this.config.System.thumbnail },
+            thumbnail: { url: this.config.URLs.thumbnail },
             fields: [
                 {
                     name: "🟢 Online Services",
@@ -140,7 +140,7 @@ class StatusMonitor {
                 }
             ],
             footer: {
-                iconURL: this.config.System.thumbnail,
+                iconURL: this.config.URLs.thumbnail,
                 text: this.config.System.footer || '© 2024 - 2025 Hex Modz'
             }
         };
@@ -247,8 +247,11 @@ class StatusMonitor {
             res.render('index', {
                 config: this.config,
                 serviceHistory: this.serviceHistory,
-                title: this.config.System.name,
-                description: this.config.System.description
+                title: this.config.Site.name,
+                description: this.config.Site.description,
+                footer: this.config.Site.footer,
+                github: this.config.URLs.github
+
             });
         });
 
@@ -271,9 +274,9 @@ class StatusMonitor {
 
         const PORT = this.config.System.Port || 4000;
         http.listen(PORT, () => {
-            console.log("[System]".green, "Hex Status:", 'is loading');
-            console.log("[System]".cyan, "Version:", `${config.System.version}`);
-            console.log("[System]".yellow, "Hex Status:", `running on port ${PORT}`);   
+            console.log("[System]".green, "Hex Status:", 'Is loading');
+            console.log("[System]".cyan, "Version:", `${this.config.System.version}`);
+            console.log("[System]".yellow, "Hex Status:", `Running on port ${PORT}`); 
         });
     }
 }

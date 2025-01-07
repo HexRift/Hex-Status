@@ -76,22 +76,22 @@ class StatusMonitorClient {
     }
 
     updateServiceStatus(name, status, history) {
-        const safeId = name.replace(/[^a-zA-Z0-9]/g, '-');
+        // Sanitize the service name for use as an ID by replacing spaces and special characters
+        const safeId = name.replace(/[^a-zA-Z0-9-]/g, '_');
         const serviceEl = document.getElementById(`service-${safeId}`);
         if (!serviceEl) return;
 
         const elements = {
             badge: serviceEl.querySelector('.status-badge'),
-            uptimeValue: serviceEl.querySelector(`#uptime-${name}`),
-            pingValue: serviceEl.querySelector(`#ping-${name}`),
+            uptimeValue: document.getElementById(`uptime-${safeId}`),
+            pingValue: document.getElementById(`ping-${safeId}`),
             downtimeBar: serviceEl.querySelector('.downtime-bar')
         };
 
         this.updateStatusBadge(elements.badge, status);
-        this.updateServiceMetrics(name, history[name], elements);
+        this.updateServiceMetrics(safeId, history[name], elements);
         this.updateDowntimeBar(elements.downtimeBar, history[name]?.statusHistory || []);
     }
-
     updateStatusBadge(badge, status) {
         if (!badge) return;
         
