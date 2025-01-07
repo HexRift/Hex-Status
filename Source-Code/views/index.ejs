@@ -106,17 +106,16 @@
     </div>
 </body>
 <script>
-    // Ensure socket.io.js is loaded before accessing 'socket'
-    var socket = io();  // Initialize socket connection
+    const socket = io();
 
     socket.on('pingUpdate', (data) => {
         const pingElement = document.getElementById(`ping-${data.serviceName}`);
         if (pingElement) {
-            pingElement.textContent = `${data.ping}ms`;
-
-            // Add animation class
+            pingElement.textContent = `${Math.round(data.ping)}ms`;
+            
+            // Add animation with shorter duration
             pingElement.classList.add('ping-update');
-            setTimeout(() => pingElement.classList.remove('ping-update'), 9000);
+            setTimeout(() => pingElement.classList.remove('ping-update'), 3000);
         }
     });
 </script>

@@ -378,3 +378,12 @@ body {
 .ping-update {
     animation: pingPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.status-warning {
+    background-color: #ffa500;
+    color: white;
+}
+
+.status-badge.status-warning i {
+    color: #fff;
+}

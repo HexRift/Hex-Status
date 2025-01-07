@@ -2,8 +2,15 @@ class StatusMonitorClient {
     constructor() {
         this.socket = io({
             reconnectionAttempts: Infinity,
-            reconnectionDelay: 1000
+            reconnectionDelay: 2000,
+            timeout: 15000,
+            pingTimeout: 10000,
+            pingInterval: 5000
         });
+        
+        this.retryDelay = 5000;
+        this.maxRetries = 5;
+        this.retryCount = 0;
         this.initializeSocketListeners();
     }
 
@@ -13,21 +20,41 @@ class StatusMonitorClient {
         this.socket.on('error', (error) => this.handleError(error));
         this.socket.on('statusUpdate', (data) => this.handleStatusUpdate(data));
         this.socket.on('pingUpdate', (data) => this.handlePingUpdate(data));
+        this.socket.on('reconnect', () => this.handleReconnect());
     }
 
     handleConnect() {
-        console.log('[System] Connected to status server');
         this.updateConnectionStatus('connected');
+        this.retryCount = 0;
     }
 
     handleDisconnect() {
-        console.log('[System] Disconnected from status server');
         this.updateConnectionStatus('disconnected');
+        this.handleReconnection();
+    }
+
+    handleReconnect() {
+        this.updateConnectionStatus('connected');
+        this.retryCount = 0;
     }
 
     handleError(error) {
-        console.error('[System] Socket connection error:', error);
-        this.updateConnectionStatus('error');
+        if (this.retryCount < this.maxRetries) {
+            this.retryCount++;
+            this.updateConnectionStatus('warning');
+            setTimeout(() => this.socket.connect(), this.retryDelay * this.retryCount);
+        }
+    }
+
+    handleReconnection() {
+        if (this.retryCount < this.maxRetries) {
+            this.retryCount++;
+            setTimeout(() => {
+                if (this.socket.disconnected) {
+                    this.socket.connect();
+                }
+            }, this.retryDelay * this.retryCount);
+        }
     }
 
     updateConnectionStatus(status) {
@@ -38,11 +65,11 @@ class StatusMonitorClient {
     }
 
     formatUptime(percentage) {
-        return `${percentage.toFixed(2)}%`;
+        return `${Number(percentage).toFixed(2)}%`;
     }
 
     formatPing(ms) {
-        return `${ms}ms`;
+        return `${Math.round(ms)}ms`;
     }
 
     updateOverallStats(data) {
@@ -53,7 +80,7 @@ class StatusMonitorClient {
         };
 
         Object.entries(data.history).forEach(([name, serviceStats]) => {
-            if (serviceStats && typeof serviceStats.uptime !== 'undefined') {
+            if (serviceStats?.uptime !== undefined) {
                 const uptimePercentage = (serviceStats.uptime / Math.max(serviceStats.checks, 1)) * 100;
                 stats.totalUptime += uptimePercentage;
                 if (data.statuses[name]) stats.onlineCount++;
@@ -76,7 +103,6 @@ class StatusMonitorClient {
     }
 
     updateServiceStatus(name, status, history) {
-        // Sanitize the service name for use as an ID by replacing spaces and special characters
         const safeId = name.replace(/[^a-zA-Z0-9-]/g, '_');
         const serviceEl = document.getElementById(`service-${safeId}`);
         if (!serviceEl) return;
@@ -92,6 +118,7 @@ class StatusMonitorClient {
         this.updateServiceMetrics(safeId, history[name], elements);
         this.updateDowntimeBar(elements.downtimeBar, history[name]?.statusHistory || []);
     }
+
     updateStatusBadge(badge, status) {
         if (!badge) return;
         
@@ -120,15 +147,16 @@ class StatusMonitorClient {
     updateDowntimeBar(barElement, history) {
         if (!barElement || !history.length) return;
 
-        barElement.innerHTML = history.map(check => `
-            <div class="status-segment ${check.status ? 'status-up' : 'status-down'}"
-                 style="width: ${100 / Math.min(20, history.length)}%">
-            </div>
-        `).join('');
+        barElement.innerHTML = history
+            .map(check => `
+                <div class="status-segment ${check.status ? 'status-up' : 'status-down'}"
+                     style="width: ${100 / Math.min(20, history.length)}%">
+                </div>
+            `).join('');
     }
 
     handleStatusUpdate(data) {
-        if (!data || !data.statuses || !data.history) return;
+        if (!data?.statuses || !data?.history) return;
 
         requestAnimationFrame(() => {
             this.updateOverallStats(data);

@@ -6,279 +6,277 @@ const colors = require("colors");
 const { WebhookClient } = require('discord.js');
 const path = require('path');
 
-class StatusMonitor {
+class OptimizedStatusMonitor {
     constructor() {
-        this.config = yaml.load(fs.readFileSync('config.yml', 'utf8'));
+        this.config = this.loadConfig();
         this.messageIdFile = 'messageId.json';
-        this.serviceHistory = {};
+        this.serviceHistory = new Map();
         this.lastMessageId = this.loadMessageId();
-        this.webhook = new WebhookClient({ url: this.config.URLs.webhook_url });
-        this.pingInterval = this.config.System.pingInterval; // 5 seconds for ping updates
+        this.webhook = this.config.URLs.webhook_url ? new WebhookClient({ url: this.config.URLs.webhook_url }) : null;
+        this.maxHistoryLength = 20;
+        this.cleanupInterval = 1800000;
+        this.axiosInstance = axios.create({
+            timeout: 10000,
+            headers: {
+                'User-Agent': 'HexStatus/2.0',
+                'Accept': '*/*',
+                'Cache-Control': 'no-cache'
+            },
+            maxRedirects: 5,
+            validateStatus: () => true
+        });
+    }
+
+    loadConfig() {
+        try {
+            return yaml.load(fs.readFileSync('config.yml', 'utf8'));
+        } catch (error) {
+            console.error("[System]".red, "Failed to load config:", error.message);
+            process.exit(1);
+        }
     }
 
     loadMessageId() {
-        if (fs.existsSync(this.messageIdFile)) {
-            try {
-                return JSON.parse(fs.readFileSync(this.messageIdFile, 'utf8')).messageId;
-            } catch {
-                return null;
-            }
+        try {
+            return fs.existsSync(this.messageIdFile) 
+                ? JSON.parse(fs.readFileSync(this.messageIdFile, 'utf8')).messageId 
+                : null;
+        } catch {
+            return null;
         }
-        return null;
     }
 
-    saveMessageId(messageId) {
-        fs.writeFileSync(this.messageIdFile, JSON.stringify({ messageId }));
-    }
-
-    initializeServiceHistory() {
+    initializeServices() {
         this.config.services.forEach(service => {
-            this.serviceHistory[service.name] = {
+            this.serviceHistory.set(service.name, {
                 status: false,
                 uptime: 0,
                 checks: 0,
                 lastCheck: null,
                 responseTime: 0,
                 statusHistory: []
-            };
+            });
         });
     }
 
     async checkService(service) {
-        const startTime = Date.now();
+        const startTime = process.hrtime.bigint();
         try {
-            const response = await axios.get(service.url, {
-                timeout: 5000,
-                validateStatus: () => true
-            });
-            return {
-                isUp: response.status >= 200 && response.status < 300,
-                responseTime: Date.now() - startTime
-            };
-        } catch (error) {
-            console.error(`[System] Error checking ${service.name}:`.red, error.message);
-            return { isUp: false, responseTime: Date.now() - startTime };
+            const response = await this.axiosInstance.get(service.url);
+            const responseTime = Number(process.hrtime.bigint() - startTime) / 1e6;
+
+            const isUp = (response.status >= 200 && response.status < 300) || 
+                        response.status === 403 || 
+                        response.status === 503;
+
+            return { isUp, responseTime };
+        } catch {
+            const responseTime = Number(process.hrtime.bigint() - startTime) / 1e6;
+            return { isUp: false, responseTime };
         }
     }
 
-    async updatePingOnly(service, io) {
-        const startTime = Date.now();
-        try {
-            const response = await axios.get(service.url, { timeout: 5000 });
-            const pingTime = Date.now() - startTime;
+    async updateServiceStatus(service, io) {
+        const result = await this.checkService(service);
+        const serviceData = this.serviceHistory.get(service.name);
+        
+        if (!serviceData) return false;
 
-            // Update service history
-            this.serviceHistory[service.name].responseTime = pingTime;
-
-            // Emit ping update via Socket.IO
+        const statusChanged = serviceData.status !== result.isUp;
+        
+        // Round the ping immediately when sending
+        const roundedPing = Math.round(result.responseTime);
+        
+        if (io) {
             io.emit('pingUpdate', {
                 serviceName: service.name,
-                ping: pingTime
+                ping: roundedPing
             });
-
-            // Update Discord embed ping
-            await this.updateDiscordEmbedPing(service.name, pingTime);
-
-            return pingTime;
-        } catch (error) {
-            console.error(`[System] Ping update failed for ${service.name}:`.red, error.message);
-            return null;
         }
-    }
+        
+        serviceData.responseTime = roundedPing; // Store rounded value
+        serviceData.checks++;
+        serviceData.lastCheck = new Date();
+        serviceData.status = result.isUp;
+        if (result.isUp) serviceData.uptime++;
 
-    async updateDiscordEmbedPing(serviceName, pingTime) {
-        if (!this.lastMessageId) return;
-
-        try {
-            const message = await this.webhook.fetchMessage(this.lastMessageId);
-            const embed = message.embeds[0];
-
-            // Update ping in online services field
-            if (embed.fields[0].name === "🟢 Online Services") {
-                const lines = embed.fields[0].value.split('\n');
-                const updatedLines = lines.map(line => {
-                    if (line.includes(serviceName)) {
-                        return line.replace(/Ping: \d+ms/, `Ping: ${pingTime}ms`);
-                    }
-                    return line;
-                });
-                embed.fields[0].value = updatedLines.join('\n');
-            }
-
-            await this.webhook.editMessage(this.lastMessageId, { embeds: [embed] });
-        } catch (error) {
-            console.error(`[System] Discord embed ping update failed:`.red, error.message);
-        }
-    }
-
-    async sendStatusWebhook() {
-        const onlineServices = this.config.services.filter(service => 
-            this.serviceHistory[service.name].status);
-        const offlineServices = this.config.services.filter(service => 
-            !this.serviceHistory[service.name].status);
-
-        const embed = {
-            title: '📊 Service Status Update',
-            description: `**${onlineServices.length}/${this.config.services.length}** services are currently online.`,
-            color: onlineServices.length === this.config.services.length ? 0x00ff00 : 0xff0000,
+        serviceData.statusHistory.push({
+            status: result.isUp,
             timestamp: new Date(),
-            thumbnail: { url: this.config.URLs.thumbnail },
-            fields: [
-                {
-                    name: "🟢 Online Services",
-                    value: onlineServices.length > 0 
-                        ? onlineServices.map(service => this.formatServiceStatus(service, true)).join("\n")
-                        : "No services are online.",
-                    inline: true
-                },
-                {
-                    name: "🔴 Offline Services",
-                    value: offlineServices.length > 0
-                        ? offlineServices.map(service => this.formatServiceStatus(service, false)).join("\n")
-                        : "No services are offline.",
-                    inline: true
-                }
-            ],
-            footer: {
-                iconURL: this.config.URLs.thumbnail,
-                text: this.config.System.footer || '© 2024 - 2025 Hex Modz'
-            }
-        };
+            responseTime: roundedPing
+        });
 
+        if (serviceData.statusHistory.length > this.maxHistoryLength) {
+            serviceData.statusHistory = serviceData.statusHistory.slice(-this.maxHistoryLength);
+        }
+
+        return statusChanged;
+    }
+    async updateAllServices(io) {
+        const statusChanges = await Promise.all(
+            this.config.services.map(service => this.updateServiceStatus(service, io))
+        );
+
+        if (statusChanges.some(changed => changed)) {
+            await this.sendDiscordUpdate();
+        }
+
+        this.emitFullUpdate(io);
+    }
+
+    async sendDiscordUpdate() {
+        if (!this.webhook) return;
+
+        const embed = this.createStatusEmbed();
         try {
             if (this.lastMessageId) {
                 await this.webhook.editMessage(this.lastMessageId, { embeds: [embed] });
             } else {
                 const message = await this.webhook.send({ embeds: [embed] });
                 this.lastMessageId = message.id;
-                this.saveMessageId(this.lastMessageId);
+                fs.writeFileSync(this.messageIdFile, JSON.stringify({ messageId: this.lastMessageId }));
             }
         } catch (error) {
-            console.log("[System]".red, "Discord notification failed:", error.message);
+            console.log("[System]".red, "Discord update failed:", error.message);
         }
     }
 
-    formatServiceStatus(service, isOnline) {
-        const history = this.serviceHistory[service.name];
-        return isOnline
-            ? `**${service.name}**\nPing: ${history.responseTime}ms\nUptime: ${this.calculateUptime(history)}%\n`
-            : `**${service.name}**\nLast Checked: ${new Date(history.lastCheck).toLocaleString()}\n`;
-    }
+    createStatusEmbed() {
+        const services = Array.from(this.serviceHistory.entries());
+        const onlineServices = services.filter(([, data]) => data.status);
+        const offlineServices = services.filter(([, data]) => !data.status);
 
-    calculateUptime(history) {
-        return ((history.uptime / Math.max(history.checks, 1)) * 100).toFixed(2);
-    }
-
-    async updateStatuses(io) {
-        let statusChanged = false;
-
-        await Promise.all(this.config.services.map(async (service) => {
-            const { isUp, responseTime } = await this.checkService(service);
-            const currentStatus = this.serviceHistory[service.name].status;
-
-            this.updateServiceHistory(service.name, isUp, responseTime);
-            if (currentStatus !== isUp) statusChanged = true;
-        }));
-
-        if (statusChanged) await this.sendStatusWebhook();
-        this.emitStatusUpdate(io);
-    }
-
-    updateServiceHistory(serviceName, isUp, responseTime) {
-        const service = this.serviceHistory[serviceName];
-        service.checks++;
-        service.lastCheck = new Date();
-        service.responseTime = responseTime;
-        service.status = isUp;
-        if (isUp) service.uptime++;
-
-        service.statusHistory.push({
-            status: isUp,
+        return {
+            title: '📊 Service Status Update',
+            description: `**${onlineServices.length}/${services.length}** services online`,
+            color: onlineServices.length === services.length ? 0x00ff00 : 0xff0000,
             timestamp: new Date(),
-            responseTime
-        });
-
-        if (service.statusHistory.length > 20) {
-            service.statusHistory.shift();
-        }
+            thumbnail: { url: this.config.URLs.thumbnail },
+            fields: [
+                {
+                    name: "🟢 Online Services",
+                    value: this.formatServiceList(onlineServices, true),
+                    inline: true
+                },
+                {
+                    name: "🔴 Offline Services",
+                    value: this.formatServiceList(offlineServices, false),
+                    inline: true
+                }
+            ],
+            footer: {
+                iconURL: this.config.URLs.thumbnail,
+                text: this.config.Site.footer
+            }
+        };
     }
 
-    emitStatusUpdate(io) {
+    formatServiceList(services, isOnline) {
+        return services.length > 0 
+            ? services.map(([name, data]) => this.formatServiceEntry(name, data, isOnline)).join("\n")
+            : "No services";
+    }
+
+    formatServiceEntry(name, data, isOnline) {
+        const uptime = ((data.uptime / Math.max(data.checks, 1)) * 100).toFixed(2);
+        const ping = Math.round(data.responseTime);
+        
+        return isOnline
+            ? `**${name}**\nPing: ${ping}ms\nUptime: ${uptime}%`
+            : `**${name}**\nLast Seen: ${new Date(data.lastCheck).toLocaleString()}`;
+    }
+
+    emitFullUpdate(io) {
         const stats = this.calculateStats();
         io.emit('statusUpdate', {
-            statuses: this.getServiceStatuses(),
-            history: this.serviceHistory,
+            statuses: Object.fromEntries(Array.from(this.serviceHistory.entries())
+                .map(([name, data]) => [name, data.status])),
+            history: Object.fromEntries(this.serviceHistory),
             stats
         });
     }
 
     calculateStats() {
-        const onlineCount = Object.values(this.serviceHistory)
-            .filter(s => s.status).length;
-        const totalUptime = Object.values(this.serviceHistory)
-            .reduce((acc, service) => acc + this.calculateUptime(service), 0);
+        const services = Array.from(this.serviceHistory.values());
+        const onlineCount = services.filter(s => s.status).length;
+        const totalUptime = services.reduce((acc, service) => {
+            return acc + ((service.uptime / Math.max(service.checks, 1)) * 100);
+        }, 0);
 
         return {
-            totalServices: this.config.services.length,
+            totalServices: this.serviceHistory.size,
             onlineServices: onlineCount,
-            overallUptime: (totalUptime / this.config.services.length).toFixed(2)
+            overallUptime: (totalUptime / this.serviceHistory.size).toFixed(2)
         };
-    }
-
-    getServiceStatuses() {
-        return Object.fromEntries(
-            Object.entries(this.serviceHistory)
-                .map(([name, data]) => [name, data.status])
-        );
     }
 
     async startServer() {
         const app = express();
-        const http = require('http').Server(app);
-        const io = require('socket.io')(http);
+        const server = require('http').createServer(app);
+        const io = require('socket.io')(server);
 
-        this.initializeServiceHistory();
+        this.initializeServices();
+
+ // Real-time ping updates for both web and Discord
+ setInterval(async () => {
+    for (const service of this.config.services) {
+        const startTime = process.hrtime.bigint();
+        try {
+            await this.axiosInstance.get(service.url);
+            const pingTime = Math.round(Number(process.hrtime.bigint() - startTime) / 1e6);
+            
+            // Update service history with new ping
+            const serviceData = this.serviceHistory.get(service.name);
+            if (serviceData) {
+                serviceData.responseTime = pingTime;
+            }
+
+            // Emit to web clients
+            io.emit('pingUpdate', {
+                serviceName: service.name,
+                ping: pingTime
+            });
+
+            // Update Discord embed with latest data
+            if (this.webhook && this.lastMessageId) {
+                const embed = this.createStatusEmbed();
+                await this.webhook.editMessage(this.lastMessageId, { embeds: [embed] });
+            }
+        } catch (error) {
+            // Silent fail for clean operation
+        }
+    }
+}, 2000);
+
 
         app.set('view engine', 'ejs');
         app.use(express.static('public'));
-        app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/client-dist')));
 
         app.get('/', (req, res) => {
             res.render('index', {
                 config: this.config,
-                serviceHistory: this.serviceHistory,
+                serviceHistory: Object.fromEntries(this.serviceHistory),
                 title: this.config.Site.name,
                 description: this.config.Site.description,
                 footer: this.config.Site.footer,
                 github: this.config.URLs.github
-
             });
         });
 
-        io.on('connection', (socket) => this.emitStatusUpdate(io));
+        io.on('connection', () => this.emitFullUpdate(io));
 
-        // Initial status update
-        await this.updateStatuses(io);
+        await this.updateAllServices(io);
 
-        // Full status update interval
-        setInterval(() => this.updateStatuses(io), this.config.System.refresh_interval * 120);
+        setInterval(() => this.updateAllServices(io), 
+            this.config.System.refresh_interval * 1000);
 
-        // Real-time ping updates for online services
-        setInterval(() => {
-            this.config.services.forEach(service => {
-                if (this.serviceHistory[service.name].status) {
-                    this.updatePingOnly(service, io);
-                }
-            });
-        }, this.pingInterval);
-
-        const PORT = this.config.System.Port || 4000;
-        http.listen(PORT, () => {
-            console.log("[System]".green, "Hex Status:", 'Is loading');
-            console.log("[System]".cyan, "Version:", `${this.config.System.version}`);
-            console.log("[System]".yellow, "Hex Status:", `Running on port ${PORT}`); 
+        const PORT = this.config.System.Port || 3000;
+        server.listen(PORT, () => {
+            console.log("[System]".green, "Hex Status:", 'Initialized');
+            console.log("[System]".cyan, "Version:", this.config.System.version);
+            console.log("[System]".yellow, "Server:", `Running on port ${PORT}`);
         });
     }
 }
 
-new StatusMonitor().startServer();
+new OptimizedStatusMonitor().startServer();

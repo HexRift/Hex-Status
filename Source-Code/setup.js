@@ -83,12 +83,6 @@ async function setupWizard() {
                 name: 'refresh_interval',
                 message: console.log("[System]:".blue, `Refresh interval (seconds):`),
                 default: 120
-            },
-            {
-                type: 'number',
-                name: 'pingInterval',
-                message: console.log("[System]:".blue, `Ping interval (seconds):`),
-                default: 500
             }
         ]);
         console.log("[Wizard]:".cyan, `URLs Configurationn\n`); 
@@ -181,7 +175,7 @@ async function setupWizard() {
             Site: siteConfig,
             System: {
                 ...systemConfig,
-                version: "5.0.0"
+                version: "5.2.2"
             },
             URLs: urlsConfig,
             theme: themeConfig,
