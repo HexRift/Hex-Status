@@ -248,7 +248,7 @@ class EnhancedStatusMonitor {
                     `**Average Response:** ${Math.round(avgResponseTime)}ms`,
                     `**Overall Uptime:** ${overallUptime.toFixed(2)}%`
                 ].join('\n'),
-                inline: false
+                inline: true
             }, {
                 name: '🔝 Best Performers',
                 value: services
