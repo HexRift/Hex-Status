@@ -387,3 +387,26 @@ body {
 .status-badge.status-warning i {
     color: #fff;
 }
+
+.no-services-message {
+    text-align: center;
+    padding: 40px;
+
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.no-services-message i {
+    font-size: 48px;
+    color: var(--accent);
+    margin-bottom: 20px;
+}
+
+.no-services-message h2 {
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.no-services-message p {
+    color: #fff;
+}

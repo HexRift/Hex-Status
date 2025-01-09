@@ -19,8 +19,17 @@ class StatusMonitorClient {
         this.socket.on('disconnect', () => this.handleDisconnect());
         this.socket.on('error', (error) => this.handleError(error));
         this.socket.on('statusUpdate', (data) => this.handleStatusUpdate(data));
-        this.socket.on('pingUpdate', (data) => this.handlePingUpdate(data));
+        this.socket.on('serviceUpdate', (data) => this.handleServiceUpdate(data));
+        this.socket.on('initialState', (data) => this.handleInitialState(data));
         this.socket.on('reconnect', () => this.handleReconnect());
+        this.socket.on('pingUpdate', (data) => {
+            const pingElement = document.getElementById(`ping-${data.serviceName}`);
+            if (pingElement) {
+                pingElement.textContent = `${Math.round(data.ping)}ms`;
+                pingElement.classList.add('ping-update');
+                setTimeout(() => pingElement.classList.remove('ping-update'), 1000);
+            }
+        });
     }
 
     handleConnect() {
@@ -72,20 +81,101 @@ class StatusMonitorClient {
         return `${Math.round(ms)}ms`;
     }
 
-    updateOverallStats(data) {
-        const stats = {
-            totalServices: Object.keys(data.statuses).length,
-            onlineCount: 0,
-            totalUptime: 0
-        };
-
-        Object.entries(data.history).forEach(([name, serviceStats]) => {
-            if (serviceStats?.uptime !== undefined) {
-                const uptimePercentage = (serviceStats.uptime / Math.max(serviceStats.checks, 1)) * 100;
-                stats.totalUptime += uptimePercentage;
-                if (data.statuses[name]) stats.onlineCount++;
-            }
+    handleInitialState(services) {
+        if (!services || services.length === 0) return;
+        
+        services.forEach(service => {
+            this.updateServiceDisplay({
+                name: service.name,
+                status: service.status,
+                uptime: service.uptime,
+                checks: service.checks,
+                responseTime: service.responseTime,
+                statusHistory: service.statusHistory
+            });
         });
+        this.updateOverallStats(services);
+    }
+
+    handleServiceUpdate(data) {
+        const serviceEl = document.getElementById(`service-${data.name.replace(/[^a-zA-Z0-9]/g, '_')}`);
+        if (!serviceEl) return;
+
+        // Update status badge
+        const badge = serviceEl.querySelector('.status-badge');
+        if (badge) {
+            badge.className = `status-badge ${data.status ? 'status-online' : 'status-offline'}`;
+            badge.innerHTML = `<i class="fas ${data.status ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${data.status ? 'Online' : 'Offline'}`;
+        }
+
+        // Update ping
+        const pingEl = serviceEl.querySelector('.metric-value[id^="ping-"]');
+        if (pingEl) {
+            pingEl.textContent = this.formatPing(data.responseTime);
+            pingEl.classList.add('ping-update');
+            setTimeout(() => pingEl.classList.remove('ping-update'), 1000);
+        }
+    }
+
+    updateServiceDisplay(service) {
+        const serviceEl = document.getElementById(`service-${service.name.replace(/[^a-zA-Z0-9]/g, '_')}`);
+        if (!serviceEl) return;
+
+        const uptime = (service.uptime / Math.max(service.checks, 1)) * 100;
+        
+        // Update status badge
+        const badge = serviceEl.querySelector('.status-badge');
+        if (badge) {
+            badge.className = `status-badge ${service.status ? 'status-online' : 'status-offline'}`;
+            badge.innerHTML = `<i class="fas ${service.status ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${service.status ? 'Online' : 'Offline'}`;
+        }
+
+        // Update metrics
+        const uptimeEl = serviceEl.querySelector('.metric-value[id^="uptime-"]');
+        if (uptimeEl) {
+            uptimeEl.textContent = this.formatUptime(uptime);
+        }
+
+        const pingEl = serviceEl.querySelector('.metric-value[id^="ping-"]');
+        if (pingEl) {
+            pingEl.textContent = this.formatPing(service.responseTime);
+        }
+
+        // Update status history
+        this.updateStatusHistory(serviceEl, service.statusHistory);
+    }
+
+    updateStatusHistory(serviceEl, history) {
+        const historyBar = serviceEl.querySelector('.downtime-bar');
+        if (!historyBar || !history) return;
+
+        historyBar.innerHTML = history
+            .map(check => `
+                <div class="status-segment ${check.status ? 'status-up' : 'status-down'}"
+                     style="width: ${100 / Math.min(20, history.length)}%">
+                </div>
+            `).join('');
+    }
+
+    handleStatusUpdate(data) {
+        if (!data?.services) return;
+
+        requestAnimationFrame(() => {
+            data.services.forEach(service => {
+                this.updateServiceDisplay(service);
+            });
+            this.updateOverallStats(data.services);
+        });
+    }
+
+    updateOverallStats(services) {
+        const stats = {
+            totalServices: services.length,
+            onlineCount: services.filter(s => s.status).length,
+            totalUptime: services.reduce((acc, service) => {
+                return acc + ((service.uptime / Math.max(service.checks, 1)) * 100);
+            }, 0)
+        };
 
         const averageUptime = stats.totalServices > 0 ? stats.totalUptime / stats.totalServices : 0;
 
@@ -100,75 +190,6 @@ class StatusMonitorClient {
             element.classList.add('value-update');
             setTimeout(() => element.classList.remove('value-update'), 1000);
         }
-    }
-
-    updateServiceStatus(name, status, history) {
-        const safeId = name.replace(/[^a-zA-Z0-9-]/g, '_');
-        const serviceEl = document.getElementById(`service-${safeId}`);
-        if (!serviceEl) return;
-
-        const elements = {
-            badge: serviceEl.querySelector('.status-badge'),
-            uptimeValue: document.getElementById(`uptime-${safeId}`),
-            pingValue: document.getElementById(`ping-${safeId}`),
-            downtimeBar: serviceEl.querySelector('.downtime-bar')
-        };
-
-        this.updateStatusBadge(elements.badge, status);
-        this.updateServiceMetrics(safeId, history[name], elements);
-        this.updateDowntimeBar(elements.downtimeBar, history[name]?.statusHistory || []);
-    }
-
-    updateStatusBadge(badge, status) {
-        if (!badge) return;
-        
-        const statusClass = status ? 'status-online' : 'status-offline';
-        const statusText = status ? 'Online' : 'Offline';
-        const iconClass = status ? 'fa-check-circle' : 'fa-times-circle';
-
-        badge.className = `status-badge ${statusClass}`;
-        badge.innerHTML = `<i class="fas ${iconClass}"></i> ${statusText}`;
-    }
-
-    updateServiceMetrics(name, stats, elements) {
-        if (!stats) return;
-
-        const uptime = (stats.uptime / Math.max(stats.checks, 1)) * 100;
-        
-        if (elements.uptimeValue) {
-            elements.uptimeValue.textContent = this.formatUptime(uptime);
-        }
-        
-        if (elements.pingValue) {
-            elements.pingValue.textContent = this.formatPing(stats.responseTime);
-        }
-    }
-
-    updateDowntimeBar(barElement, history) {
-        if (!barElement || !history.length) return;
-
-        barElement.innerHTML = history
-            .map(check => `
-                <div class="status-segment ${check.status ? 'status-up' : 'status-down'}"
-                     style="width: ${100 / Math.min(20, history.length)}%">
-                </div>
-            `).join('');
-    }
-
-    handleStatusUpdate(data) {
-        if (!data?.statuses || !data?.history) return;
-
-        requestAnimationFrame(() => {
-            this.updateOverallStats(data);
-            Object.entries(data.statuses).forEach(([name, status]) => {
-                this.updateServiceStatus(name, status, data.history);
-            });
-        });
-    }
-
-    handlePingUpdate(data) {
-        const { serviceName, ping } = data;
-        this.updateElement(`ping-${serviceName}`, this.formatPing(ping));
     }
 }
 

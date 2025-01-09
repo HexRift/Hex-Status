@@ -26,12 +26,10 @@ if (!fs.existsSync('node_modules')) {
         process.exit(1);
     }
 }
-
 const inquirer = require('inquirer');
 const yaml = require('js-yaml');
 const chalk = require('chalk');
 const figlet = require('figlet');
-const ora = require('ora');
 const { Auth } = require('./Auth');
 
 async function displayWelcome() {
@@ -50,6 +48,7 @@ async function displayWelcome() {
 async function setupWizard() {
     try {
         await displayWelcome();
+
         console.log("[Wizard]:".cyan, `Auth Configuration\n`); 
         const authConfig = await inquirer.prompt([
             {
@@ -75,8 +74,8 @@ async function setupWizard() {
             process.exit(1);
         }
         console.log("[Auth]:".green, `License verified successfully!`); 
-
-     console.log("[Wizard]:".cyan, `Site Configuration\n`);  
+        
+        console.log("[Wizard]:".cyan, `Site Configuration\n`);  
         const siteConfig = await inquirer.prompt([
             {
                 type: 'input',
@@ -88,15 +87,16 @@ async function setupWizard() {
                 type: 'input',
                 name: 'description',
                 message: console.log("[System]:".blue, `Site description:`),
-                default: 'Check real-time updates on the status of Hex Modz services'
+                default: 'Check real-time updates on the status of services'
             },
             {
                 type: 'input',
                 name: 'footer',
                 message: console.log("[System]:".blue, `Footer text:`),
-                default: 'Hex Modz'
+                default: 'Hex Status'
             }
         ]);
+
         console.log("[Wizard]:".cyan, `System Configuration\n`);  
         const systemConfig = await inquirer.prompt([
             {
@@ -112,19 +112,14 @@ async function setupWizard() {
                 default: 120
             }
         ]);
-        console.log("[Wizard]:".cyan, `URLs Configurationn\n`); 
+
+        console.log("[Wizard]:".cyan, `URLs Configuration\n`); 
         const urlsConfig = await inquirer.prompt([
             {
                 type: 'input',
                 name: 'github',
                 message: console.log("[System]:".blue, `GitHub URL:`),
-                default: 'https://hexmodz.com/github'
-            },
-            {
-                type: 'input',
-                name: 'webhook_url',
-                message: console.log("[System]:".blue, `Discord webhook URL:`),
-                default: ''
+                default: 'https://github.com'
             },
             {
                 type: 'input',
@@ -133,6 +128,7 @@ async function setupWizard() {
                 default: ''
             }
         ]);
+
         console.log("[Wizard]:".cyan, `Theme Configuration\n`); 
         const themeConfig = await inquirer.prompt([
             {
@@ -160,67 +156,53 @@ async function setupWizard() {
                 default: '#1a1a1a'
             }
         ]);
-        console.log("[Wizard]:".cyan, `Services Configuration\n`); 
-        const services = [];
-        let addMore = true;
 
- while (addMore) {
-            console.log("[Wizard]:".yellow, `Adding new service...`); 
-            const service = await inquirer.prompt([
-                {
-                    type: 'input',
-                    name: 'name',
-                    message: console.log("[System]:".blue, `Service name:`),
-                },
-                {
-                    type: 'input',
-                    name: 'url',
-                    message: console.log("[System]:".blue, `Service URL:`),
-                },
-                {
-                    type: 'input',
-                    name: 'description',
-                    message: console.log("[System]:".blue, `Service description:`),
-                }
-            ]);
+        console.log("[Wizard]:".cyan, `MongoDB Configuration\n`);
+        const mongoConfig = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'uri',
+                message: console.log("[System]:".blue, `MongoDB URI:`),
+                validate: input => input.length > 0 ? true : 'MongoDB URI is required'
+            }
+        ]);
 
-
-            services.push(service);
-
-            const { continue: shouldContinue } = await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'continue',
-                    message: chalk.yellow('Add another service?'),
-                    default: true
-                }
-            ]);
-
-            addMore = shouldContinue;
-        }
+        console.log("[Wizard]:".cyan, `Discord Bot Configuration\n`);
+        const botConfig = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'token',
+                message: console.log("[System]:".blue, `Bot Token:`),
+                validate: input => input.length > 0 ? true : 'Bot Token is required'
+            }
+        ]);
 
         const config = {
             Auth: authConfig,
             Site: siteConfig,
             System: {
                 ...systemConfig,
-                version: "5.2.2"
+                version: "6.0.0"
             },
             URLs: urlsConfig,
             theme: themeConfig,
-            services: services
+            MongoDB: mongoConfig,
+            Bot: botConfig
         };
+
         console.log("[System]:".yellow, `Saving configuration...`); 
         fs.writeFileSync('config.yml', yaml.dump(config));
         console.log("[System]:".green, `Configuration saved successfully!`); 
-        console.log("[System]:".green, `Setup complete! Your status page is ready to go.`); 
-        console.log("[System]:".cyan, `Start your Hex Status with: npm start\n`); 
+        console.log("[System]:".green, `Setup complete! Hex Status is ready to go.`); 
+        console.log("[System]:".cyan, `Start Hex Status with: npm start\n`); 
 
     } catch (error) {
         console.log("[System]:".red, `Error during setup:`, error); 
         process.exit(1);
     }
-}if (!fs.existsSync('config.yml')) {
+}
+
+if (!fs.existsSync('config.yml')) {
     setupWizard();
 } else {
     console.log("[System]:".red, `Configuration file already exists. Delete config.yml to run setup again.`); 

@@ -28,7 +28,6 @@
             </div>
             <p class="header-description"><%= description %></p>
         </header>
-
         <div class="stats-container">
             <div class="stat-card">
                 <i class="fas fa-chart-line stat-icon"></i>
@@ -42,59 +41,62 @@
             </div>
             <div class="stat-card">
                 <i class="fas fa-network-wired stat-icon"></i>
-                <div class="stat-value"><%= config.services.length %></div>
+                <div class="stat-value"><%= services ? services.length : 0 %></div>
                 <div class="stat-label">Total Services</div>
             </div>
         </div>
 
         <div class="services-list">
-            <% config.services.forEach((service) => { %>
-                <div class="service-item" id="service-<%= service.name.replace(/[^a-zA-Z0-9]/g, '-') %>">
-                    <div class="service-header">
-                        <div class="service-info">
-                            <h2><%= service.name %></h2>
-                            <div class="service-meta">
-                                <i class="fas fa-info-circle"></i>
-                                <%= service.description %>
-                            </div>
-                        </div>
-                        <div class="service-metrics">
-                            <div class="metric">
-                                <i class="fas fa-tachometer-alt metric-icon"></i>
-                                <span class="metric-label">Ping</span>
-                                <span class="metric-value" id="ping-<%= service.name %>">
-                                    <%= serviceHistory[service.name]?.responseTime || 0 %>ms
-                                </span>
-                            </div>
-                            <div class="metric">
-                                <i class="fas fa-clock metric-icon"></i>
-                                <span class="metric-label">Uptime</span>
-                                <span class="metric-value" id="uptime-<%= service.name %>">
-                                    <%= ((serviceHistory[service.name]?.uptime / Math.max(serviceHistory[service.name]?.checks, 1)) * 100).toFixed(2) %>%
-                                </span>
-                            </div>
-                        </div>
-                        <div class="status-badge <%= serviceHistory[service.name]?.status ? 'status-online' : 'status-offline' %>">
-                            <i class="fas <%= serviceHistory[service.name]?.status ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
-                            <%= serviceHistory[service.name]?.status ? 'Online' : 'Offline' %>
-                        </div>
-                    </div>
-                    <div class="downtime-bar">
-                        <% serviceHistory[service.name]?.statusHistory.forEach((check, index) => { %>
-                            <div class="status-segment <%= check.status ? 'status-up' : 'status-down' %>"
-                                style="width: <%= 100 / Math.min(20, serviceHistory[service.name].statusHistory.length) %>%">
-                            </div>
-                        <% }); %>
-                    </div>
+            <% if (!services || services.length === 0) { %>
+                <div class="no-services-message">
+                    <i class="fas fa-info-circle"></i>
+                    <h2>No Services Added</h2>
+                    <p>Use the Hex Status command /addservice to start monitoring your first service.</p>
                 </div>
-            <% }); %>
+            <% } else { %>
+                <% services.forEach((service) => { %>
+                    <div class="service-item" id="service-<%= service.name.replace(/[^a-zA-Z0-9]/g, '_') %>">
+                        <div class="service-header">
+                            <div class="service-info">
+                                <h2><%= service.name %></h2>
+                            </div>
+                            <div class="service-metrics">
+                                <div class="metric">
+                                    <i class="fas fa-tachometer-alt metric-icon"></i>
+                                    <span class="metric-label">Ping</span>
+                                    <span class="metric-value" id="ping-<%= service.name %>">
+                                        <%= service.responseTime %>ms
+                                    </span>
+                                </div>
+                                <div class="metric">
+                                    <i class="fas fa-clock metric-icon"></i>
+                                    <span class="metric-label">Uptime</span>
+                                    <span class="metric-value" id="uptime-<%= service.name %>">
+                                        <%= ((service.uptime / Math.max(service.checks, 1)) * 100).toFixed(2) %>%
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="status-badge <%= service.status ? 'status-online' : 'status-offline' %>">
+                                <i class="fas <%= service.status ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
+                                <%= service.status ? 'Online' : 'Offline' %>
+                            </div>
+                        </div>
+                        <div class="downtime-bar">
+                            <% service.statusHistory.forEach((check, index) => { %>
+                                <div class="status-segment <%= check.status ? 'status-up' : 'status-down' %>"
+                                    style="width: <%= 100 / Math.min(20, service.statusHistory.length) %>%">
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } %>
         </div>
-
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <p>© <%= new Date().getFullYear() %> <%= footer %></p>
-                    <p class="footer-stats">Monitoring <%= config.services.length %> Services</p>
+                    <p>© 2024 - <%= new Date().getFullYear() %> <%= footer %></p>
+                    <p class="footer-stats">Monitoring <%= services ? services.length : 0 %> Services</p>
                 </div>
                 <div class="footer-links">
                     <a href="<%= github %>" target="_blank" rel="noopener">
