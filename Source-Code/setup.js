@@ -1,11 +1,15 @@
-const { execSync } = require('child_process');
+const {
+    execSync
+} = require('child_process');
 const fs = require('fs');
 
 // Install colors first
 if (!fs.existsSync('node_modules/colors')) {
     console.log('\nInstalling colors package...\n');
     try {
-        execSync('npm install colors', { stdio: 'inherit' });
+        execSync('npm install colors', {
+            stdio: 'inherit'
+        });
     } catch (error) {
         console.error('Failed to install colors package');
         process.exit(1);
@@ -19,7 +23,9 @@ const colors = require('colors');
 if (!fs.existsSync('node_modules')) {
     console.log('[Installer]:'.cyan, 'Installing required dependencies...\n');
     try {
-        execSync('npm install', { stdio: 'inherit' });
+        execSync('npm install', {
+            stdio: 'inherit'
+        });
         console.log('[Installer]:'.green, 'Dependencies installed successfully!\n');
     } catch (error) {
         console.log('[Installer]:'.red, 'Failed to install dependencies. Please run npm install manually.\n');
@@ -47,10 +53,9 @@ async function displayWelcome() {
 async function setupWizard() {
     try {
         await displayWelcome();
-        
-        console.log("[Wizard]:".cyan, `Site Configuration\n`);  
-        const siteConfig = await inquirer.prompt([
-            {
+
+        console.log("[Wizard]:".cyan, `Site Configuration\n`);
+        const siteConfig = await inquirer.prompt([{
                 type: 'input',
                 name: 'name',
                 message: console.log("[System]:".blue, `Site name:`),
@@ -70,9 +75,8 @@ async function setupWizard() {
             }
         ]);
 
-        console.log("[Wizard]:".cyan, `System Configuration\n`);  
-        const systemConfig = await inquirer.prompt([
-            {
+        console.log("[Wizard]:".cyan, `System Configuration\n`);
+        const systemConfig = await inquirer.prompt([{
                 type: 'number',
                 name: 'Port',
                 message: console.log("[System]:".blue, `Port number:`),
@@ -86,13 +90,12 @@ async function setupWizard() {
             }
         ]);
 
-        console.log("[Wizard]:".cyan, `URLs Configuration\n`); 
-        const urlsConfig = await inquirer.prompt([
-            {
+        console.log("[Wizard]:".cyan, `URLs Configuration\n`);
+        const urlsConfig = await inquirer.prompt([{
                 type: 'input',
                 name: 'github',
                 message: console.log("[System]:".blue, `GitHub URL:`),
-                default: 'https://github.com'
+                default: 'https://hexmodz.com/github'
             },
             {
                 type: 'input',
@@ -102,9 +105,8 @@ async function setupWizard() {
             }
         ]);
 
-        console.log("[Wizard]:".cyan, `Theme Configuration\n`); 
-        const themeConfig = await inquirer.prompt([
-            {
+        console.log("[Wizard]:".cyan, `Theme Configuration\n`);
+        const themeConfig = await inquirer.prompt([{
                 type: 'input',
                 name: 'primary',
                 message: console.log("[System]:".blue, `Primary color (hex):`),
@@ -131,24 +133,20 @@ async function setupWizard() {
         ]);
 
         console.log("[Wizard]:".cyan, `MongoDB Configuration\n`);
-        const mongoConfig = await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'uri',
-                message: console.log("[System]:".blue, `MongoDB URI:`),
-                validate: input => input.length > 0 ? true : 'MongoDB URI is required'
-            }
-        ]);
+        const mongoConfig = await inquirer.prompt([{
+            type: 'input',
+            name: 'uri',
+            message: console.log("[System]:".blue, `MongoDB URI:`),
+            validate: input => input.length > 0 ? true : 'MongoDB URI is required'
+        }]);
 
         console.log("[Wizard]:".cyan, `Discord Bot Configuration\n`);
-        const botConfig = await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'token',
-                message: console.log("[System]:".blue, `Bot Token:`),
-                validate: input => input.length > 0 ? true : 'Bot Token is required'
-            }
-        ]);
+        const botConfig = await inquirer.prompt([{
+            type: 'input',
+            name: 'token',
+            message: console.log("[System]:".blue, `Bot Token:`),
+            validate: input => input.length > 0 ? true : 'Bot Token is required'
+        }]);
 
         const config = {
             Site: siteConfig,
@@ -162,14 +160,14 @@ async function setupWizard() {
             Bot: botConfig
         };
 
-        console.log("[System]:".yellow, `Saving configuration...`); 
+        console.log("[System]:".yellow, `Saving configuration...`);
         fs.writeFileSync('config.yml', yaml.dump(config));
-        console.log("[System]:".green, `Configuration saved successfully!`); 
-        console.log("[System]:".green, `Setup complete! Hex Status is ready to go.`); 
-        console.log("[System]:".cyan, `Start Hex Status with: npm start\n`); 
+        console.log("[System]:".green, `Configuration saved successfully!`);
+        console.log("[System]:".green, `Setup complete! Hex Status is ready to go.`);
+        console.log("[System]:".cyan, `Start Hex Status with: npm start\n`);
 
     } catch (error) {
-        console.log("[System]:".red, `Error during setup:`, error); 
+        console.log("[System]:".red, `Error during setup:`, error);
         process.exit(1);
     }
 }
@@ -177,5 +175,5 @@ async function setupWizard() {
 if (!fs.existsSync('config.yml')) {
     setupWizard();
 } else {
-    console.log("[System]:".red, `Configuration file already exists. Delete config.yml to run setup again.`); 
+    console.log("[System]:".red, `Configuration file already exists. Delete config.yml to run setup again.`);
 }

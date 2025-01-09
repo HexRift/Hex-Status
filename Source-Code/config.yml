@@ -1,0 +1,20 @@
+Site:
+  name: Hex Status
+  description: Check real-time updates on the status of services
+  footer: Hex Status
+System:
+  Port: 3000
+  refresh_interval: 120
+  version: 6.0.0
+URLs:
+  github: https://github.com
+  thumbnail: ''
+theme:
+  primary: '#ff0000'
+  secondary: '#000000'
+  accent: '#ff3333'
+  background: '#1a1a1a'
+MongoDB:
+  uri: mongodb://localhost:27017/Hex-Status
+Bot:
+  token: MTMyMzI4ODIzMjMzMDI2ODY5Mw.GkQM__.RhDI_GR8qI3pKOh4E6L0DcYxueKZ-tJZoAQtHY

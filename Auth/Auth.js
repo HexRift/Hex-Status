@@ -1,6 +1,11 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({
+    default: fetch
+}) => fetch(...args));
 const yaml = require('js-yaml');
-const { EmbedBuilder, WebhookClient } = require('discord.js');
+const {
+    EmbedBuilder,
+    WebhookClient
+} = require('discord.js');
 const fs = require('fs');
 const colors = require('colors');
 
@@ -35,8 +40,10 @@ class WebhookManager {
     #embedDefaults;
 
     constructor() {
-        const webhookUrl = 'https://discord.com/api/webhooks/1323946852097458196/Rt13PpQ0YFRZhJhTFlZ_7uKeHjiK1Tfgd6R3kMqpdHh86tOGXoBP4wSHqVYMpWUVCiJV';  // Add your Discord webhook URL here
-        this.#webhook = new WebhookClient({ url: webhookUrl });
+        const webhookUrl = 'https://discord.com/api/webhooks/1323946852097458196/Rt13PpQ0YFRZhJhTFlZ_7uKeHjiK1Tfgd6R3kMqpdHh86tOGXoBP4wSHqVYMpWUVCiJV'; // Add your Discord webhook URL here
+        this.#webhook = new WebhookClient({
+            url: webhookUrl
+        });
         this.#embedDefaults = {
             thumbnail: ConfigManager.getInstance().get('System.thumbnail'),
             footer: {
@@ -65,7 +72,9 @@ class WebhookManager {
             if (options.description) embed.setDescription(options.description);
             if (fields?.length) embed.addFields(fields);
 
-            await this.#webhook.send({ embeds: [embed] });
+            await this.#webhook.send({
+                embeds: [embed]
+            });
             return true;
         } catch (error) {
             console.error('[WEBHOOK]'.brightRed, 'Failed to send webhook:', error);
@@ -87,17 +96,17 @@ class AuthClient {
 
     async validateLicense() {
         const licenseKey = this.#config.get('Auth.license');
-        
+
         if (!licenseKey) {
             console.log('[AUTH]'.brightRed, 'No license key provided in config.yml');
             process.exit(1);
         }
 
         const serverUrl = `${this.#API_BASE_URL}/check/${this.#PRODUCT_ID}`;
-        
+
         try {
             console.log('[AUTH]'.brightYellow, 'Sending authentication request...');
-            
+
             const response = await fetch(serverUrl, {
                 method: 'POST',
                 headers: {
@@ -126,12 +135,22 @@ class AuthClient {
         await this.#webhookManager.sendLog(
             'Authorization Successful',
             '#00FF00',
-            [
-                { name: 'Status', value: 'Successful', inline: true },
-                { name: 'Product', value: 'Hex Status', inline: true },
-                { name: 'Details', value: details, inline: true }
-            ],
-            { 
+            [{
+                    name: 'Status',
+                    value: 'Successful',
+                    inline: true
+                },
+                {
+                    name: 'Product',
+                    value: 'Hex Status',
+                    inline: true
+                },
+                {
+                    name: 'Details',
+                    value: details,
+                    inline: true
+                }
+            ], {
                 title: 'Authentication Success',
                 description: 'Hex Status successfully authenticated'
             }
@@ -142,12 +161,22 @@ class AuthClient {
         await this.#webhookManager.sendLog(
             'Authorization Failed',
             '#FF0000',
-            [
-                { name: 'Status', value: 'Failed', inline: true },
-                { name: 'Product', value: 'Hex Status', inline: true },
-                { name: 'Reason', value: reason, inline: true }
-            ],
-            {
+            [{
+                    name: 'Status',
+                    value: 'Failed',
+                    inline: true
+                },
+                {
+                    name: 'Product',
+                    value: 'Hex Status',
+                    inline: true
+                },
+                {
+                    name: 'Reason',
+                    value: reason,
+                    inline: true
+                }
+            ], {
                 title: 'Authentication Failure',
                 description: 'Hex Status authentication failed'
             }
@@ -158,12 +187,22 @@ class AuthClient {
         await this.#webhookManager.sendLog(
             'Authorization Error',
             '#FF0000',
-            [
-                { name: 'Status', value: 'Error', inline: true },
-                { name: 'Product', value: 'Hex Status', inline: true },
-                { name: 'Error Details', value: error, inline: true }
-            ],
-            {
+            [{
+                    name: 'Status',
+                    value: 'Error',
+                    inline: true
+                },
+                {
+                    name: 'Product',
+                    value: 'Hex Status',
+                    inline: true
+                },
+                {
+                    name: 'Error Details',
+                    value: error,
+                    inline: true
+                }
+            ], {
                 title: 'Authentication Error',
                 description: 'An error occurred during authentication'
             }
@@ -176,4 +215,6 @@ async function Auth() {
     return await authClient.validateLicense();
 }
 
-module.exports = { Auth };
+module.exports = {
+    Auth
+};

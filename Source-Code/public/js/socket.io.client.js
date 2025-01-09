@@ -7,7 +7,7 @@ class StatusMonitorClient {
             pingTimeout: 10000,
             pingInterval: 5000
         });
-        
+
         this.retryDelay = 5000;
         this.maxRetries = 5;
         this.retryCount = 0;
@@ -83,7 +83,7 @@ class StatusMonitorClient {
 
     handleInitialState(services) {
         if (!services || services.length === 0) return;
-        
+
         services.forEach(service => {
             this.updateServiceDisplay({
                 name: service.name,
@@ -122,7 +122,7 @@ class StatusMonitorClient {
         if (!serviceEl) return;
 
         const uptime = (service.uptime / Math.max(service.checks, 1)) * 100;
-        
+
         // Update status badge
         const badge = serviceEl.querySelector('.status-badge');
         if (badge) {
