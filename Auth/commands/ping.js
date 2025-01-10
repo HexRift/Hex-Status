@@ -20,6 +20,7 @@ async function handlePingCommand(interaction, { config, client }) {
         .setTitle(`🏓 ${client.user.username} Ping Statistics`)
         .setColor(determineLatencyColor(roundTripLatency))
         .setDescription(`Detailed latency and performance metrics`)
+        .setThumbnail(config.URLs?.thumbnail || null)
         .addFields({
             name: '🤖 Bot Latency',
             value: `Round-trip: \`${roundTripLatency}ms\`\nWebSocket: \`${client.ws.ping}ms\``,

@@ -68,7 +68,7 @@ async function handleBotInfoCommand(interaction, { config, client }) {
                     name: '⚡ Performance',
                     value: [
                         `**Overall Uptime:** ${overallUptime.toFixed(2)}%`,
-                        `**Refresh Rate:** ${this.config?.System?.refresh_interval}s`,
+                        `**Refresh Rate:** ${config?.System?.refresh_interval}s`,
                         `**Database:** ${mongoose.connection.readyState === 1 ? '🟢 Connected' : '🔴 Disconnected'}`,
                         `**Cache Size:** ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`
                     ].join('\n'),
