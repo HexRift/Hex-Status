@@ -15,6 +15,6 @@ URLs:
   github: https://hexmodz.com/github
   thumbnail: https://hexmodz.com/assets/logo.png
 MongoDB:
-  uri: mongodb://localhost:27017/Hex-Status
+  uri: mongodb://localhost:27017/Hex-Status1
 Bot:
   token: MTMyNzE0NzM3MjA4MTQ0NzAyNA.GFF5m7.jw8A4lXqlLwQquzbs0pp8fMym3Owx5ulfK587U

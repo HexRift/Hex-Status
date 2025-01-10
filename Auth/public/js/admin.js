@@ -169,7 +169,12 @@ function deleteService(serviceName) {
         });
     }
 }
-
+document.getElementById('menuToggle').addEventListener('click', function() {
+    document.getElementById('mobileNav').classList.toggle('active');
+    const icon = this.querySelector('i');
+    icon.classList.toggle('fa-bars');
+    icon.classList.toggle('fa-times');
+});
 
 // Initialize dashboard
 const adminDashboard = new AdminDashboard();

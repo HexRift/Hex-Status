@@ -988,3 +988,98 @@ body {
     border: 1px solid rgba(245, 158, 11, 0.2);
     color: #f59e0b;
 }
+
+/* Enhanced Mobile Navigation */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hamburger:hover {
+    background: var(--card-hover-bg);
+    transform: translateY(-2px);
+}
+
+.hamburger i {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1001;
+        backdrop-filter: blur(12px);
+    }
+
+    .admin-nav {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--background), rgba(0, 0, 0, 0.95));
+        backdrop-filter: blur(12px);
+        flex-direction: column;
+        padding: 2rem 1.5rem; /* Reduced from 5rem to 2rem */
+        align-items: center;
+        justify-content: flex-start; /* Aligns items from the top */
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-100%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .admin-nav.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .nav-link {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        justify-content: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin: 0.25rem 0; /* Reduced margin between links */
+    }
+
+    .admin-nav.active .nav-link {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: calc(0.1s * var(--index));
+    }
+
+    .nav-link:hover {
+        background: var(--card-hover-bg);
+        border-color: var(--accent);
+    }
+
+    .nav-link i {
+        font-size: 1.25rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
