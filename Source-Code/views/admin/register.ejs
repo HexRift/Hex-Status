@@ -25,28 +25,33 @@
         <div class="auth-container">
             <div class="auth-card">
                 <h1>Admin Register</h1>
+                <% if (locals.error) { %>
+                    <div class="notification error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p><%= error %></p>
+                    </div>
+                <% } %>
                 <% if (registrationDisabled) { %>
-                <div class="auth-error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p><%= error %></p>
-                    <a href="/admin/login" class="auth-button">Go to Login</a>
-                </div>
+                    <div class="auth-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Please contact an existing administrator.</p>  
+                    </div>
                 <% } else { %>
-                <form class="auth-form" action="/admin/register" method="POST">
-                    <div class="form-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" name="username" placeholder="Username" required>
-                    </div>
-                    <div class="form-group">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="Email" required>
-                    </div>
-                    <div class="form-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" placeholder="Password" required>
-                    </div>
-                    <button type="submit" class="auth-button">Register</button>
-                </form>
+                    <form class="auth-form" action="/admin/register" method="POST">
+                        <div class="form-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" name="username" placeholder="Username" required>
+                        </div>
+                        <div class="form-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" name="password" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="auth-button">Register</button>
+                    </form>
                 <% } %>
                 <div class="auth-links">
                     <a href="/admin/login">Already have an account?</a>

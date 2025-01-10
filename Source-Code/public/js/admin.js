@@ -146,5 +146,30 @@ function closeModal() {
     document.getElementById('addServiceModal').style.display = 'none';
 }
 
+function deleteService(serviceName) {
+    if (confirm(`Are you sure you want to delete ${serviceName}?`)) {
+        fetch(`/admin/services/${serviceName}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh the page to show updated service list
+                window.location.reload();
+            } else {
+                alert('Failed to delete service');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete service');
+        });
+    }
+}
+
+
 // Initialize dashboard
 const adminDashboard = new AdminDashboard();
