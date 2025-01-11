@@ -3,8 +3,7 @@ const {
 } = require('child_process');
 const fs = require('fs');
 const authConfig = {
-    license: '',
-    enabled: true
+    license: ''
 };
 
 // Install essential dependencies first
