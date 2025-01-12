@@ -45,10 +45,10 @@ class WebhookManager {
             url: webhookUrl
         });
         this.#embedDefaults = {
-            thumbnail: ConfigManager.getInstance().get('System.thumbnail'),
+            thumbnail: ConfigManager.getInstance().get('System.thumbnail') || 'https://hexarion.net/Logo-t2.png',
             footer: {
-                text: ConfigManager.getInstance().get('System.footer') || '© 2024 - 2025 Hex Modz',
-                iconURL: ConfigManager.getInstance().get('System.thumbnail')
+                text: ConfigManager.getInstance().get('System.footer') || '© 2024 - 2025 Hexarion',
+                iconURL: ConfigManager.getInstance().get('System.thumbnail') || 'https://hexarion.net/Logo-t2.png',
             }
         };
     }
@@ -87,7 +87,7 @@ class AuthClient {
     #config;
     #webhookManager;
     #PRODUCT_ID = '40';
-    #API_BASE_URL = 'https://api.hexmodz.com/api';
+    #API_BASE_URL = 'https://api.hexarion.net/api';
 
     constructor() {
         this.#config = ConfigManager.getInstance();
