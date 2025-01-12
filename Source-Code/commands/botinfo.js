@@ -26,6 +26,8 @@ async function handleBotInfoCommand(interaction, { config, client }) {
     const footer = config?.Site?.footer || 'Hex Status';
     const thumbnail = config?.URLs?.thumbnail || null;
     const refresh_interval = config?.System?.refresh_interval || 1000;
+   // Convert milliseconds to seconds for display
+    const refreshRateInSeconds = (config?.System?.refresh_interval || 1000) / 1000;
 
     const botInfoEmbed = new EmbedBuilder()
         .setTitle(`📊 ${interaction.client.user.username} Statistics`)
@@ -68,7 +70,7 @@ async function handleBotInfoCommand(interaction, { config, client }) {
                     name: '⚡ Performance',
                     value: [
                         `**Overall Uptime:** ${overallUptime.toFixed(2)}%`,
-                        `**Refresh Rate:** ${config?.System?.refresh_interval}s`,
+                        `**Refresh Rate:** ${refreshRateInSeconds}s`,
                         `**Database:** ${mongoose.connection.readyState === 1 ? '🟢 Connected' : '🔴 Disconnected'}`,
                         `**Cache Size:** ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`
                     ].join('\n'),
@@ -102,6 +104,7 @@ async function handleBotInfoCommand(interaction, { config, client }) {
                 text: `${config.Site?.footer || 'Hex Status'} • Version ${config.System?.version || '8.0.0'}`,
                 iconURL: config.URLs?.thumbnail || null
             });
+
     
         await interaction.editReply({ embeds: [botInfoEmbed] });
     }
