@@ -126,9 +126,7 @@ class StatusMonitorClient {
         // Update status badge
         const badge = serviceEl.querySelector('.status-badge');
         if (badge) {
-            badge.className = `status-badge ${service.status ? 'status-online' : 'status-offline'}`;
-            badge.innerHTML = `<i class="fas ${service.status ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${service.status ? 'Online' : 'Offline'}`;
-        }
+            badge.className = `status-badge ${service.status ? 'status-online' : 'status-offline'}`;        }
 
         // Update metrics
         const uptimeEl = serviceEl.querySelector('.metric-value[id^="uptime-"]');

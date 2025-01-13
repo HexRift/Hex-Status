@@ -78,7 +78,6 @@
                 <div class="stat-label">Total Services</div>
             </div>
             <div class="stat-card">
-                <i class="fas fa-check-circle stat-icon"></i>
                 <div class="stat-value"><%= services.filter(s => s.status).length %></div>
                 <div class="stat-label">Online Services</div>
             </div>
@@ -115,7 +114,6 @@
                         </div>
                     </div>
                     <div class="status-badge <%= service.status ? 'status-online' : 'status-offline' %>">
-                        <i class="fas <%= service.status ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
                         <%= service.status ? 'Online' : 'Offline' %>
                     </div>
                 </div>
