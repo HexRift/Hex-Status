@@ -169,11 +169,35 @@ function deleteService(serviceName) {
         });
     }
 }
+// Menu Toggle Functionality
 document.getElementById('menuToggle').addEventListener('click', function() {
     document.getElementById('mobileNav').classList.toggle('active');
     const icon = this.querySelector('i');
     icon.classList.toggle('fa-bars');
     icon.classList.toggle('fa-times');
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', function(event) {
+    const mobileNav = document.getElementById('mobileNav');
+    const menuToggle = document.getElementById('menuToggle');
+    
+    if (!mobileNav.contains(event.target) && !menuToggle.contains(event.target)) {
+        mobileNav.classList.remove('active');
+        menuToggle.querySelector('i').classList.remove('fa-times');
+        menuToggle.querySelector('i').classList.add('fa-bars');
+    }
+});
+
+// Close menu when pressing escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const mobileNav = document.getElementById('mobileNav');
+        const menuToggle = document.getElementById('menuToggle');
+        mobileNav.classList.remove('active');
+        menuToggle.querySelector('i').classList.remove('fa-times');
+        menuToggle.querySelector('i').classList.add('fa-bars');
+    }
 });
 
 // Initialize dashboard

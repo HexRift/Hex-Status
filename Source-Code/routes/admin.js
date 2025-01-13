@@ -53,6 +53,7 @@ router.post('/settings/site', adminAuth, async (req, res) => {
         config.Site.name = siteName;
         config.Site.description = description;
         config.theme.primary = themeColor;
+        
 
         // Save to config file
         fs.writeFileSync('config.yml', yaml.dump(config), 'utf8');

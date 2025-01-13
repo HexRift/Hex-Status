@@ -28,10 +28,9 @@
             <div class="logo-container">
                 <h1><%= title %></h1>
             </div>
-            <p class="header-description"><%= description %></p>
             <div class="header-actions">
                 <a href="/admin/login" class="nav-link login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login
+                    <i class="fas fa-sign-in-alt"></i> Admin Login
                 </a>
             </div>
         </header>
@@ -39,7 +38,7 @@
             <div class="stat-card">
                 <i class="fas fa-chart-line stat-icon"></i>
                 <div class="stat-value" id="overall-uptime">0%</div>
-                <div class="stat-label">Overall Uptime</div>
+                <div class="stat-label">Average Uptime</div>
             </div>
             <div class="stat-card">
                 <i class="fas fa-server stat-icon"></i>
@@ -103,7 +102,6 @@
             <div class="footer-content">
                 <div class="footer-info">
                     <p>© 2024 - <%= new Date().getFullYear() %> <%= footer %></p>
-                    <p class="footer-stats">Monitoring <%= services ? services.length : 0 %> Services</p>
                 </div>
                 <div class="footer-links">
                     <a href="<%= github %>" target="_blank" rel="noopener">
