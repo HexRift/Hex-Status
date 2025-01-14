@@ -13,7 +13,7 @@ function setupRoutes(app) {
 
     // Mount routes
     app.use('/', publicRoutes);
-    app.use('/admin', adminRoutes);
+    app.use('/', adminRoutes);
     app.use('/api', apiRoutes);
 }
 

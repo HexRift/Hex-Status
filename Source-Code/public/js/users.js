@@ -4,7 +4,7 @@ document.getElementById('editUserForm').addEventListener('submit', async (e) => 
     const userId = formData.get('userId');
 
     try {
-        const response = await fetch(`/admin/users/${userId}`, {
+        const response = await fetch(`/users/${userId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(Object.fromEntries(formData))
@@ -20,7 +20,7 @@ document.getElementById('editUserForm').addEventListener('submit', async (e) => 
 async function deleteUser(id) {
     if (confirm('Are you sure you want to delete this user?')) {
         try {
-            const response = await fetch(`/admin/users/${id}`, {
+            const response = await fetch(`/users/${id}`, {
                 method: 'DELETE'
             });
             if (response.ok) {

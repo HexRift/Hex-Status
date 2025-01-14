@@ -38,7 +38,7 @@ class SettingsManager {
         }
 
         try {
-            const response = await fetch('/admin/settings/account', {
+            const response = await fetch('/settings/account', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ class SettingsManager {
         const data = Object.fromEntries(formData);
 
         try {
-            const response = await fetch('/admin/settings/site', {
+            const response = await fetch('/settings/site', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

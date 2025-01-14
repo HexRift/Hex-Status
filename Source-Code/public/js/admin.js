@@ -20,7 +20,7 @@ class AdminDashboard {
         const formData = new FormData(event.target);
         const originalName = formData.get('originalName');
 
-        fetch(`/admin/services/${originalName}`, {
+        fetch(`/services/${originalName}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -48,7 +48,7 @@ class AdminDashboard {
         };
 
         try {
-            const response = await fetch('/admin/services/add', {
+            const response = await fetch('/services/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ class AdminDashboard {
         if (!confirm(`Are you sure you want to delete ${serviceName}?`)) return;
 
         try {
-            const response = await fetch(`/admin/services/${serviceName}`, {
+            const response = await fetch(`/services/${serviceName}`, {
                 method: 'DELETE'
             });
 
@@ -148,7 +148,7 @@ function closeModal() {
 
 function deleteService(serviceName) {
     if (confirm(`Are you sure you want to delete ${serviceName}?`)) {
-        fetch(`/admin/services/${serviceName}`, {
+        fetch(`/services/${serviceName}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'

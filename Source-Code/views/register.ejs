@@ -37,7 +37,7 @@
                         <p>Please contact an existing administrator.</p>  
                     </div>
                 <% } else { %>
-                    <form class="auth-form" action="/admin/register" method="POST">
+                    <form class="auth-form" action="/register" method="POST">
                         <div class="form-group">
                             <i class="fas fa-user"></i>
                             <input type="text" name="username" placeholder="Username" required>
@@ -54,7 +54,7 @@
                     </form>
                 <% } %>
                 <div class="auth-links">
-                    <a href="/admin/login">Already have an account?</a>
+                    <a href="/login">Already have an account?</a>
                 </div>
             </div>
         </div>

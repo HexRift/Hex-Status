@@ -5,8 +5,9 @@ const adminAuth = require('../middleware/adminAuth');
 const yaml = require('js-yaml');
 const fs = require('fs');
 
+// Change these routes
 router.get('/login', (req, res) => {
-    res.render('admin/login', { config: req.app.locals.config });
+    res.render('login', { config: req.app.locals.config });
 });
 
 router.post('/login', async (req, res) => {
@@ -15,7 +16,7 @@ router.post('/login', async (req, res) => {
         const admin = await Admin.findOne({ username });
 
         if (!admin || !(await AuthService.validateCredentials(username, password))) {
-            return res.render('admin/login', {
+            return res.render('login', {
                 config: req.app.locals.config,
                 error: 'Invalid username or password'
             });
@@ -23,9 +24,9 @@ router.post('/login', async (req, res) => {
 
         const token = AuthService.generateToken(admin._id);
         res.cookie('adminToken', token, { httpOnly: true });
-        res.redirect('/admin/dashboard');
+        res.redirect('dashboard');
     } catch (error) {
-        res.render('admin/login', {
+        res.render('login', {
             config: req.app.locals.config,
             error: 'An error occurred during login'
         });
@@ -34,7 +35,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/dashboard', adminAuth, async (req, res) => {
     const services = await Service.find();
-    res.render('admin/dashboard', {
+    res.render('dashboard', {
         config: req.app.locals.config,
         services,
         admin: req.admin
@@ -53,6 +54,7 @@ router.post('/settings/site', adminAuth, async (req, res) => {
         config.Site.name = siteName;
         config.Site.description = description;
         config.theme.primary = themeColor;
+        
 
         // Save to config file
         fs.writeFileSync('config.yml', yaml.dump(config), 'utf8');
@@ -93,7 +95,7 @@ router.post('/services/add', adminAuth, async (req, res) => {
 
 router.get('/services', adminAuth, async (req, res) => {
     const services = await Service.find();
-    res.render('admin/services', {
+    res.render('services', {
         config: req.app.locals.config,
         services,
         admin: req.admin
@@ -120,7 +122,7 @@ router.post('/services/edit/:id', adminAuth, async (req, res) => {
 
 router.get('/services/history/:id', adminAuth, async (req, res) => {
     const service = await Service.findById(req.params.id);
-    res.render('admin/serviceHistory', {
+    res.render('serviceHistory', {
         config: req.app.locals.config,
         service,
         admin: req.admin
@@ -140,7 +142,7 @@ router.put('/services/:name', adminAuth, async (req, res) => {
 
 router.get('/users', adminAuth, async (req, res) => {
     const users = await Admin.find({}, 'username email createdAt');
-    res.render('admin/users', {
+    res.render('users', {
         config: req.app.locals.config,
         users,
         admin: req.admin
@@ -174,13 +176,13 @@ router.post('/users/delete/:id', adminAuth, async (req, res) => {
 
 router.get('/logout', (req, res) => {
     res.clearCookie('adminToken');
-    res.redirect('/admin/login');
+    res.redirect('login');
 });
 
 
 router.get('/users', adminAuth, async (req, res) => {
     const users = await Admin.find({}, 'username email createdAt');
-    res.render('admin/users', {
+    res.render('users', {
         config: req.app.locals.config,
         users,
         admin: req.admin
@@ -228,7 +230,7 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
 });
 
 router.get('/settings', adminAuth, async (req, res) => {
-    res.render('admin/settings', {
+    res.render('settings', {
         config: req.app.locals.config,
         admin: req.admin
     });
@@ -236,7 +238,7 @@ router.get('/settings', adminAuth, async (req, res) => {
 
 function deleteService(serviceName) {
     if (confirm(`Are you sure you want to delete ${serviceName}?`)) {
-        fetch(`/admin/services/${serviceName}`, {
+        fetch(`services/${serviceName}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -317,13 +319,13 @@ router.get('/register', async (req, res) => {
     // Check if any admin account exists
     const existingAdmin = await Admin.findOne({});
     if (existingAdmin) {
-        res.render('admin/register', {
+        res.render('register', {
             config: req.app.locals.config,
             error: 'An admin account already exists. Registration is disabled.',
             registrationDisabled: true
         });
     } else {
-        res.render('admin/register', {
+        res.render('register', {
             config: req.app.locals.config,
             error: null,
             registrationDisabled: false
@@ -335,7 +337,7 @@ router.post('/register', async (req, res) => {
     try {
         const existingAdmin = await Admin.findOne({});
         if (existingAdmin) {
-            return res.render('admin/register', {
+            return res.render('register', {
                 config: req.app.locals.config,
                 error: 'Registration is disabled. An admin account already exists.',
                 registrationDisabled: true
@@ -351,9 +353,9 @@ router.post('/register', async (req, res) => {
         });
 
         await admin.save();
-        res.redirect('/admin/login');
+        res.redirect('login');
     } catch (error) {
-        res.render('admin/register', {
+        res.render('register', {
             config: req.app.locals.config,
             error: 'Registration failed. Please try again.',
             registrationDisabled: false

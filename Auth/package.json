@@ -1,6 +1,6 @@
 {
   "name": "hex-status",
-  "version": "8.2.2",
+  "version": "9.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
