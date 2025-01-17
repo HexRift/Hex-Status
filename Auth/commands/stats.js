@@ -31,7 +31,7 @@ async function handleStatsCommand(interaction, { config, client }) {
         .setImage('attachment://stats.png')
         .setTimestamp()
         .setFooter({
-            text: `${config?.Site?.footer || 'Hex Status'} • Updates every ${config?.System?.refresh_interval || 60}s`,
+            text: `${config?.Site?.footer || 'Hex Status'} • Updates every ${config?.System?.refresh_interval || 1000}s`,
             iconURL: config?.URLs?.thumbnail || null
         });
 

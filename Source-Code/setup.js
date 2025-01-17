@@ -163,7 +163,7 @@ async function setupWizard() {
             URLs: urlConfig,
             System: {
                 ...systemConfig,
-                version: "9.0.0"
+                version: "10.0.0"
             },
             theme: themeConfig,
             MongoDB: {

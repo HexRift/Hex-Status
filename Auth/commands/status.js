@@ -17,10 +17,7 @@ async function sendStatusEmbed(interaction, { config, client }) {
         const updatedServices = await Service.find();
         const updatedEmbed = createStatusEmbed(updatedServices, config);
         await reply.edit({ embeds: [updatedEmbed] }).catch(() => clearInterval(updateInterval));
-    }, config?.System?.refresh_interval || 5000);
-
-    // Clean up interval after 5 minutes
-    setTimeout(() => clearInterval(updateInterval), 300000);
+    }, config?.System?.refresh_interval || 1000);
 }
 
 function createStatusEmbed(services, config) {
