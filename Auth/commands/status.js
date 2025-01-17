@@ -5,7 +5,7 @@ const { generateStatsGraph } = require('../utils/charts');
 async function sendStatusEmbed(interaction, { config, client }) {
     await interaction.deferReply();
     
-    const services = await Service.find();
+    const services = await Service.find().lean();
     const graphBuffer = await generateStatsGraph(services, config, 'status');
     const statusData = calculateStatusMetrics(services);
     
@@ -15,24 +15,31 @@ async function sendStatusEmbed(interaction, { config, client }) {
         files: [{ attachment: graphBuffer, name: 'status-graph.png' }]
     });
 
+    let lastGraphUpdate = Date.now();
+    const graphUpdateInterval = 60000 + Math.random() * 60000; // Random interval between 1-2 minutes
+
     const updateInterval = setInterval(async () => {
         try {
-            const updatedServices = await Service.find();
-            const newGraphBuffer = await generateStatsGraph(updatedServices, config, 'status');
+            const updatedServices = await Service.find().lean();
             const updatedData = calculateStatusMetrics(updatedServices);
-            const updatedEmbed = createEnhancedStatusEmbed(updatedData, config);
-            
-            await reply.edit({
-                embeds: [updatedEmbed],
-                files: [{ attachment: newGraphBuffer, name: 'status-graph.png' }]
-            });
+            const updates = {
+                embeds: [createEnhancedStatusEmbed(updatedData, config)]
+            };
+
+            // Generate new graph every 1-2 minutes
+            if (Date.now() - lastGraphUpdate >= graphUpdateInterval) {
+                const newGraphBuffer = await generateStatsGraph(updatedServices, config, 'status');
+                updates.files = [{ attachment: newGraphBuffer, name: 'status-graph.png' }];
+                lastGraphUpdate = Date.now();
+            }
+
+            await reply.edit(updates);
         } catch (error) {
             clearInterval(updateInterval);
         }
-    }, config?.System?.refresh_interval || 1000);
-}
+    }, config?.System?.refresh_interval || 5000);
 
-function calculateStatusMetrics(services) {
+}function calculateStatusMetrics(services) {
     return {
         onlineServices: services.filter(s => s.status),
         totalServices: services.length,
