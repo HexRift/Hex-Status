@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Registration">
+    <title>Admin Register - <%= config.Site.name %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: <%=config.theme.primary %>;
+            --secondary: <%=config.theme.secondary %>;
+            --accent: <%=config.theme.accent %>;
+            --background: <%=config.theme.background %>;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1>Admin Register</h1>
+                <% if (locals.error) { %>
+                    <div class="notification error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p><%= error %></p>
+                    </div>
+                <% } %>
+                <% if (registrationDisabled) { %>
+                    <div class="auth-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Please contact an existing administrator.</p>  
+                    </div>
+                <% } else { %>
+                    <form class="auth-form" action="/register" method="POST">
+                        <div class="form-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" name="username" placeholder="Username" required>
+                        </div>
+                        <div class="form-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" name="password" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="auth-button">Register</button>
+                    </form>
+                <% } %>
+                <div class="auth-links">
+                    <a href="/login">Already have an account?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

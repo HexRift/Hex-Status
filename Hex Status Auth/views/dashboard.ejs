@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Dashboard">
+    <title>Admin Dashboard - <%= config.Site.name %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --primary: <%=config.theme.primary %>;
+            --secondary: <%=config.theme.secondary %>;
+            --accent: <%=config.theme.accent %>;
+            --background: <%=config.theme.background %>;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <h1>Admin Dashboard</h1>
+            </div>
+            <button class="hamburger" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <nav class="desktop-nav">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="/services" class="nav-link">
+                    <i class="fas fa-server"></i> Services
+                </a>
+                <a href="/users" class="nav-link">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="/settings" class="nav-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="/logout" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+
+            <nav class="mobile-nav" id="mobileNav">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="/dashboard" class="nav-link active">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="/services" class="nav-link">
+                    <i class="fas fa-server"></i> Services
+                </a>
+                <a href="/users" class="nav-link">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="/settings" class="nav-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="/logout" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-server stat-icon"></i>
+                <div class="stat-value"><%= services.length %></div>
+                <div class="stat-label">Total Services</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <div class="stat-value"><%= services.filter(s => s.status).length %></div>
+                <div class="stat-label">Online Services</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line stat-icon"></i>
+                <div class="stat-value">
+                    <%= (services.reduce((acc, s) => acc + ((s.uptime / Math.max(s.checks, 1)) * 100), 0) / services.length).toFixed(2) %>%
+                </div>
+                <div class="stat-label">Average Uptime</div>
+            </div>
+        </div>
+
+        <div class="services-list">
+            <% services.forEach((service) => { %>
+            <div class="service-item" id="service-<%= service.name.replace(/[^a-zA-Z0-9]/g, '_') %>">
+                <div class="service-header">
+                    <div class="service-info">
+                        <h2><%= service.name %></h2>
+                    </div>
+                    <div class="service-metrics">
+                        <div class="metric">
+                            <i class="fas fa-tachometer-alt metric-icon"></i>
+                            <span class="metric-label">Ping</span>
+                            <span class="metric-value" id="ping-<%= service.name %>">
+                                <%= service.responseTime %>ms
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <i class="fas fa-clock metric-icon"></i>
+                            <span class="metric-label">Uptime</span>
+                            <span class="metric-value" id="uptime-<%= service.name %>">
+                                <%= ((service.uptime / Math.max(service.checks, 1)) * 100).toFixed(2) %>%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="status-badge <%= service.status ? 'status-online' : 'status-offline' %>">
+                        <%= service.status ? 'Online' : 'Offline' %>
+                    </div>
+                </div>
+                <div class="downtime-bar">
+                    <% service.statusHistory.forEach((check) => { %>
+                    <div class="status-segment <%= check.status ? 'status-up' : 'status-down' %>"
+                        style="width: <%= 100 / Math.min(20, service.statusHistory.length) %>%">
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>© 2024 - <%= new Date().getFullYear() %> <%= config.Site.footer %></p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+
+</html>

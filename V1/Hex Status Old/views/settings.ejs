@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Settings">
+    <title>Settings - <%= config.Site.name %></title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: <%=config.theme.primary %>;
+            --secondary: <%=config.theme.secondary %>;
+            --accent: <%=config.theme.accent %>;
+            --background: <%=config.theme.background %>;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <h1>Settings</h1>
+            </div>
+            <button class="hamburger" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <nav class="desktop-nav">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="/services" class="nav-link">
+                    <i class="fas fa-server"></i> Services
+                </a>
+                <a href="/users" class="nav-link">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="/settings" class="nav-link active">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="/logout" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+
+            <nav class="mobile-nav" id="mobileNav">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="/services" class="nav-link">
+                    <i class="fas fa-server"></i> Services
+                </a>
+                <a href="/users" class="nav-link">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="/settings" class="nav-link active">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="/logout" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+        </header>
+
+        <div class="settings-container">
+            <div class="stat-card settings-section">
+                <h2><i class="fas fa-palette"></i> Site Configuration</h2>
+                <form class="settings-form" id="siteConfigForm">
+                    <div class="form-group">
+                        <i class="fas fa-heading"></i>
+                        <input type="text" name="siteName" value="<%= config.Site.name %>" class="admin-input"
+                            placeholder="Site Name">
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-align-left"></i>
+                        <textarea name="description" class="admin-input"
+                            placeholder="Site Description"><%= config.Site.description %></textarea>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-paint-brush"></i>
+                        <input type="color" name="themeColor" value="<%= config.theme.primary %>" class="color-picker">
+                    </div>
+                    <button type="submit" class="admin-button">Save Changes</button>
+                </form>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>© 2024 - <%= new Date().getFullYear() %> <%= config.Site.footer %></p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="/js/settings.js"></script>
+</body>
+
+</html>
