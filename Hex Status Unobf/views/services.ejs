@@ -160,7 +160,9 @@
                 </div>
                 <div class="form-group">
                     <i class="fas fa-link"></i>
-                    <input type="url" name="url" placeholder="Service URL" required>
+                    <input type="text" name="url" placeholder="URL or IP:Port" 
+                           pattern="^(https?:\/\/.*|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?)"
+                           required>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="admin-button">
@@ -190,7 +192,9 @@
                 </div>
                 <div class="form-group">
                     <i class="fas fa-link"></i>
-                    <input type="url" name="url" id="editServiceUrl" placeholder="Service URL" required>
+                    <input type="text" name="url" placeholder="URL or IP:Port" 
+                           pattern="^(https?:\/\/.*|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?)"
+                           required>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="admin-button">

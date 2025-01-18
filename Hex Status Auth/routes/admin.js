@@ -251,7 +251,6 @@ router.post('/users/add', adminAuth, async (req, res) => {
     }
 });
 
-// Rest of your existing routes...
 
 router.post('/settings/notifications', adminAuth, async (req, res) => {
     try {
@@ -355,6 +354,7 @@ router.get('/register', async (req, res) => {
     });
 });
 
+
 router.post('/register', async (req, res) => {
     try {
         const settings = await Settings.findOne();
@@ -386,6 +386,85 @@ router.post('/register', async (req, res) => {
         });
     }
 });
+router.delete('/api/services/:name', async (req, res) => {
+    try {
+        const result = await Service.deleteOne({ name: req.params.name });
+        res.json({ success: result.deletedCount > 0 });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.put('/api/services/update', async (req, res) => {
+    try {
+        const { name, url, originalName } = req.body;
+        const service = await Service.findOneAndUpdate(
+            { name: originalName },
+            { name, url },
+            { new: true }
+        );
+        
+        if (service) {
+            res.json({ success: true, service });
+        } else {
+            res.status(404).json({ success: false, message: 'Service not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.put('/services/:name', async (req, res) => {
+    try {
+        const originalName = req.params.name;
+        const { name, url } = req.body;
+        
+        const updatedService = await Service.findOneAndUpdate(
+            { name: originalName },
+            { 
+                name: name,
+                url: url 
+            },
+            { new: true }
+        );
+        
+        if (!updatedService) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            service: updatedService 
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+router.put('/api/services/update', async (req, res) => {
+    try {
+        const { name, url, originalName } = req.body;
+        const service = await Service.findOneAndUpdate(
+            { name: originalName },
+            { name, url },
+            { new: true }
+        );
+        
+        if (service) {
+            res.json({ success: true, service });
+        } else {
+            res.status(404).json({ success: false, message: 'Service not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
 
 router.get('/logout', (req, res) => {
     res.clearCookie('adminToken');

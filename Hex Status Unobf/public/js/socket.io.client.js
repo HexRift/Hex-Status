@@ -32,6 +32,19 @@ class StatusMonitorClient {
         });
     }
 
+    async pingIpAndPort(ip, port) {
+        return new Promise((resolve) => {
+            const start = performance.now();
+            const socket = new WebSocket(`ws://${ip}:${port}`);
+            socket.onopen = () => {
+                const end = performance.now();
+                socket.close();
+                resolve(end - start);
+            };
+            socket.onerror = () => resolve(null);
+        });
+    }
+
     handleConnect() {
         this.updateConnectionStatus('connected');
         this.retryCount = 0;
@@ -78,43 +91,32 @@ class StatusMonitorClient {
     }
 
     formatPing(ms) {
-        return `${Math.round(ms)}ms`;
+        return ms !== null ? `${Math.round(ms)}ms` : 'N/A';
     }
 
     handleInitialState(services) {
         if (!services || services.length === 0) return;
 
-        services.forEach(service => {
+        services.forEach(async (service) => {
+            const ping = await this.pingService(service);
             this.updateServiceDisplay({
-                name: service.name,
-                status: service.status,
-                uptime: service.uptime,
-                checks: service.checks,
-                responseTime: service.responseTime,
-                statusHistory: service.statusHistory
+                ...service,
+                responseTime: ping
             });
         });
         this.updateOverallStats(services);
     }
 
+    async pingService(service) {
+        if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(service.url)) {
+            const [ip, port] = service.url.split(':');
+            return await this.pingIpAndPort(ip, port || 80);
+        }
+        return null; // HTTP-based services can use existing logic.
+    }
+
     handleServiceUpdate(data) {
-        const serviceEl = document.getElementById(`service-${data.name.replace(/[^a-zA-Z0-9]/g, '_')}`);
-        if (!serviceEl) return;
-
-        // Update status badge
-        const badge = serviceEl.querySelector('.status-badge');
-        if (badge) {
-            badge.className = `status-badge ${data.status ? 'status-online' : 'status-offline'}`;
-            badge.innerHTML = `<i class="fas ${data.status ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${data.status ? 'Online' : 'Offline'}`;
-        }
-
-        // Update ping
-        const pingEl = serviceEl.querySelector('.metric-value[id^="ping-"]');
-        if (pingEl) {
-            pingEl.textContent = this.formatPing(data.responseTime);
-            pingEl.classList.add('ping-update');
-            setTimeout(() => pingEl.classList.remove('ping-update'), 1000);
-        }
+        this.updateServiceDisplay(data);
     }
 
     updateServiceDisplay(service) {
@@ -126,7 +128,8 @@ class StatusMonitorClient {
         // Update status badge
         const badge = serviceEl.querySelector('.status-badge');
         if (badge) {
-            badge.className = `status-badge ${service.status ? 'status-online' : 'status-offline'}`;        }
+            badge.className = `status-badge ${service.status ? 'status-online' : 'status-offline'}`;
+        }
 
         // Update metrics
         const uptimeEl = serviceEl.querySelector('.metric-value[id^="uptime-"]');
@@ -138,32 +141,6 @@ class StatusMonitorClient {
         if (pingEl) {
             pingEl.textContent = this.formatPing(service.responseTime);
         }
-
-        // Update status history
-        this.updateStatusHistory(serviceEl, service.statusHistory);
-    }
-
-    updateStatusHistory(serviceEl, history) {
-        const historyBar = serviceEl.querySelector('.downtime-bar');
-        if (!historyBar || !history) return;
-
-        historyBar.innerHTML = history
-            .map(check => `
-                <div class="status-segment ${check.status ? 'status-up' : 'status-down'}"
-                     style="width: ${100 / Math.min(20, history.length)}%">
-                </div>
-            `).join('');
-    }
-
-    handleStatusUpdate(data) {
-        if (!data?.services) return;
-
-        requestAnimationFrame(() => {
-            data.services.forEach(service => {
-                this.updateServiceDisplay(service);
-            });
-            this.updateOverallStats(data.services);
-        });
     }
 
     updateOverallStats(services) {

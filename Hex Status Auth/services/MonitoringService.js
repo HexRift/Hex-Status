@@ -19,6 +19,15 @@ class MonitoringService {
     }
 
     static async checkService(service) {
+        const ipPortRegex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):?(\d+)?$/;
+        const match = service.url.match(ipPortRegex);
+
+        if (match) {
+            const [, ip, port = 80] = match;
+            return await this.checkIpPort(ip, parseInt(port));
+        }
+
+        // Existing HTTP check code remains the same
         const startTime = process.hrtime.bigint();
         try {
             const response = await axios.get(service.url, {
@@ -76,6 +85,34 @@ class MonitoringService {
             { new: true }
         );
     }
+
+static async checkIpPort(ip, port) {
+    const net = require('net');
+    return new Promise((resolve) => {
+        const startTime = process.hrtime.bigint();
+        const socket = new net.Socket();
+        
+        socket.setTimeout(5000);
+        
+        socket.on('connect', () => {
+            const responseTime = Number(process.hrtime.bigint() - startTime) / 1e6;
+            socket.destroy();
+            resolve({ isUp: true, responseTime });
+        });
+
+        socket.on('error', () => {
+            const responseTime = Number(process.hrtime.bigint() - startTime) / 1e6;
+            resolve({ isUp: false, responseTime });
+        });
+
+        socket.on('timeout', () => {
+            socket.destroy();
+            resolve({ isUp: false, responseTime: 5000 });
+        });
+
+        socket.connect(port, ip);
+    });
+}
 }
 
 module.exports = { MonitoringService };

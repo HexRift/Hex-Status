@@ -1,4 +1,5 @@
 const Settings = require('../models/Settings');
+const Service = require('../models/Service');
 
 class SettingsService {
     static async getSettings() {
@@ -11,8 +12,8 @@ class SettingsService {
                     footer: 'Hex Status'
                 },
                 urls: {
-                    github: 'https://hexmodz.com/github',
-                    thumbnail: 'https://hexmodz.com/assets/logo.png'
+                    github: 'https://hexarion.net/github',
+                    thumbnail: 'https://hexarion.net/assets/logo.png'
                 },
                 system: {
                     port: 3000,
@@ -43,6 +44,11 @@ class SettingsService {
             await settings.save();
         }
         return settings;
+    }
+
+    static async deleteService(serviceName) {
+        const result = await Service.deleteOne({ name: serviceName });
+        return result.deletedCount > 0;
     }
 }
 
