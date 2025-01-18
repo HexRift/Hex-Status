@@ -16,8 +16,12 @@
             --secondary: <%=config.theme.secondary %>;
             --accent: <%=config.theme.accent %>;
             --background: <%=config.theme.background %>;
+            --text: <%=config.theme.text %>;
+            --card-bg: <%=config.theme.cardBg %>;
+            --hover: <%=config.theme.hover %>;
         }
     </style>
+
 </head>
 
 <body>
@@ -83,9 +87,63 @@
                         <textarea name="description" class="admin-input"
                             placeholder="Site Description"><%= config.Site.description %></textarea>
                     </div>
-                    <div class="form-group">
-                        <i class="fas fa-paint-brush"></i>
-                        <input type="color" name="themeColor" value="<%= config.theme.primary %>" class="color-picker">
+                    <div class="theme-settings">
+                        <h3>Theme Colors</h3>
+                        <div class="color-pickers">
+                            <div class="color-option">
+                                <label>Primary Color</label>
+                                <div class="color-input">
+                                    <input type="color" name="primaryColor" data-property="primary"
+                                        value="<%= config.theme.primary || '#ff0000' %>">
+                                    <span class="color-value"><%= config.theme.primary %></span>
+                                </div>
+                            </div>
+                            <div class="color-option">
+                                <label>Secondary Color</label>
+                                <div class="color-input">
+                                    <input type="color" name="secondaryColor" data-property="secondary"
+                                        value="<%= config.theme.secondary || '#1a1a1a' %>">
+                                    <span class="color-value"><%= config.theme.secondary %></span>
+                                </div>
+                            </div>
+                            <div class="color-option">
+                                <label>Accent Color</label>
+                                <div class="color-input">
+                                    <input type="color" name="accentColor" data-property="accent"
+                                        value="<%= config.theme.accent %> || '#ff3333'">
+                                    <span class="color-value"><%= config.theme.accent %></span>
+                                </div>
+                            </div>
+                            <div class="color-option">
+                                <label>Background Color</label>
+                                <div class="color-input">
+                                    <input type="color" name="backgroundColor" data-property="background"
+                                        value="<%= config.theme.background || '#0a0a0a' %>">
+                                    <span class="color-value"><%= config.theme.background %></span>
+                                </div>
+                            </div>
+                            <div class="color-option">
+                                <label>Text Color</label>
+                                <div class="color-input">
+                                    <input type="color" name="textColor" data-property="text" value="<%= config.theme.text || '#ffffff' %>">
+                                    <span class="color-value"><%= config.theme.text || '#ffffff' %></span>
+                                </div>
+                            </div>
+                            <div class="color-option">
+                                <label>Card Background</label>
+                                <div class="color-input">
+                                    <input type="color" name="cardBgColor" data-property="cardBg" value="<%= config.theme.cardBg || '#1f1f1f' %>">
+                                    <span class="color-value"><%= config.theme.cardBg || '#1f1f1f' %></span>
+                                </div>
+                            </div>
+                            <div class="color-option">
+                                <label>Hover Color</label>
+                                <div class="color-input">
+                                    <input type="color" name="hoverColor" data-property="hover" value="<%= config.theme.hover || '#ff1a1a' %>">
+                                    <span class="color-value"><%= config.theme.hover || '#ff1a1a' %></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <button type="submit" class="admin-button">Save Changes</button>
                 </form>

@@ -17,9 +17,12 @@ const SettingsSchema = new mongoose.Schema({
     },
     theme: {
         primary: { type: String, default: '#ff0000' },
-        secondary: { type: String, default: '#000000' },
+        secondary: { type: String, default: '#1a1a1a' },
         accent: { type: String, default: '#ff3333' },
-        background: { type: String, default: '#1a1a1a' }
+        background: { type: String, default: '#0a0a0a' },
+        text: { type: String, default: '#ffffff' },
+        cardBg: { type: String, default: '#1f1f1f' },
+        hover: { type: String, default: '#ff1a1a' }
     },
     mongodb: {
         uri: { type: String, default: 'mongodb://localhost:27017/Hex-Status' }

@@ -1,11 +1,11 @@
 :root {
-    --primary: #ff0000;
-    --secondary: #1a1a1a;
-    --accent: #ff3333;
-    --background: #0a0a0a;
-    --text: #ffffff;
-    --card-bg: #1f1f1f;
-    --hover: #ff1a1a;
+    --primary: <%=config.theme.primary %>;
+    --secondary: <%=config.theme.secondary %>;
+    --accent: <%=config.theme.accent %>;
+    --background: <%=config.theme.background %>;
+    --text: <%=config.theme.text %>;
+    --card-bg: <%=config.theme.cardBg %>;
+    --hover: <%=config.theme.hover %>;
 }
 
 * {
@@ -79,6 +79,52 @@ body {
     transition: transform 0.3s ease;
     border: 1px solid #333;
 }
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.admin-btn {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-btn:hover {
+    background-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.admin-btn i {
+    font-size: 1.1rem;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: var(--primary);
+    background: rgba(0,0,0,0.05);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
 
 .stat-card:hover {
     transform: translateY(-5px);
@@ -1062,4 +1108,69 @@ textarea[name="description"] {
 
 .settings-saved {
     animation: saveSuccess 0.5s ease;
+}
+.theme-settings {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+
+.theme-settings h3 {
+    margin-bottom: 20px;
+    color: var(--text);
+    font-size: 1.2rem;
+}
+
+.color-pickers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.color-option {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.color-option label {
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.color-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.color-input input[type="color"] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.color-input input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-input input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+
+.color-value {
+    font-family: 'Inter', monospace;
+    color: var(--text);
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
 }

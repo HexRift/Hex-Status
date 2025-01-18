@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="<%= description %>">
+    <meta name="description" content="<%= config.Site.description %>">
+
     <title><%= title %></title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -18,32 +19,44 @@
             --secondary: <%=config.theme.secondary %>;
             --accent: <%=config.theme.accent %>;
             --background: <%=config.theme.background %>;
+            --text: <%=config.theme.text %>;
+            --card-bg: <%=config.theme.cardBg %>;
+            --hover: <%=config.theme.hover %>;
         }
     </style>
+
 </head>
 
 <body>
     <div class="container">
-        <header class="header">
+        <header class="admin-header">
             <div class="logo-container">
                 <h1><%= title %></h1>
+            </div>
+            <div class="admin-login">
+                <a href="/login" class="admin-btn">
+                    <i class="fas fa-user-shield"></i>
+                    Admin Panel
+                </a>
             </div>
         </header>
         <div class="stats-container">
             <div class="stat-card">
-                <i class="fas fa-chart-line stat-icon"></i>
-                <div class="stat-value" id="overall-uptime">0%</div>
-                <div class="stat-label">Overall Uptime</div>
-            </div>
-            <div class="stat-card">
                 <i class="fas fa-server stat-icon"></i>
-                <div class="stat-value" id="online-count">0</div>
-                <div class="stat-label">Services Online</div>
+                <div class="stat-value"><%= services.length %></div>
+                <div class="stat-label">Total Services</div>
             </div>
             <div class="stat-card">
-                <i class="fas fa-network-wired stat-icon"></i>
-                <div class="stat-value"><%= services ? services.length : 0 %></div>
-                <div class="stat-label">Total Services</div>
+                <i class="fas fa-check-circle stat-icon"></i>
+                <div class="stat-value"><%= services.filter(s => s.status).length %></div>
+                <div class="stat-label">Online Services</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line stat-icon"></i>
+                <div class="stat-value">
+                    <%= (services.reduce((acc, s) => acc + ((s.uptime / Math.max(s.checks, 1)) * 100), 0) / services.length).toFixed(2) %>%
+                </div>
+                <div class="stat-label">Average Uptime</div>
             </div>
         </div>
 
@@ -95,7 +108,7 @@
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <p>© 2024 - <%= new Date().getFullYear() %> <%= footer %></p>
+                    <p>© 2024 - <%= new Date().getFullYear() %> <%= config.Site.footer %></p>
                 </div>
             </div>
         </footer>

@@ -1,10 +1,5 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
-const inquirer = require('inquirer');
-const mongoose = require('mongoose');
-const chalk = require('chalk');
-const figlet = require('figlet');
-const colors = require('colors');
 
 // Install essential dependencies if needed
 if (!fs.existsSync('node_modules/colors')) {
@@ -22,6 +17,11 @@ if (!fs.existsSync('node_modules')) {
     });
     console.log('[Installer]:'.green, 'Dependencies installed successfully!\n');
 }
+const inquirer = require('inquirer');
+const mongoose = require('mongoose');
+const chalk = require('chalk');
+const figlet = require('figlet');
+const colors = require('colors');
 
 const Settings = require('./models/Settings');
 
@@ -111,33 +111,54 @@ const configSections = {
         }
     ],
     theme: [{
-            type: 'input',
-            name: 'primary',
-            message: chalk.blue('Primary Color (hex):'),
-            default: '#ff0000',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        },
-        {
-            type: 'input',
-            name: 'secondary',
-            message: chalk.blue('Secondary Color (hex):'),
-            default: '#000000',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        },
-        {
-            type: 'input',
-            name: 'accent',
-            message: chalk.blue('Accent Color (hex):'),
-            default: '#ff3333',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        },
-        {
-            type: 'input',
-            name: 'background',
-            message: chalk.blue('Background Color (hex):'),
-            default: '#1a1a1a',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        }
+        type: 'input',
+        name: 'primary',
+        message: chalk.blue('Primary Color (hex):'),
+        default: '#ff0000',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    },
+    {
+        type: 'input',
+        name: 'secondary',
+        message: chalk.blue('Secondary Color (hex):'),
+        default: '#1a1a1a',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    },
+    {
+        type: 'input',
+        name: 'accent',
+        message: chalk.blue('Accent Color (hex):'),
+        default: '#ff3333',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    },
+    {
+        type: 'input',
+        name: 'background',
+        message: chalk.blue('Background Color (hex):'),
+        default: '#0a0a0a',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    },
+    {
+        type: 'input',
+        name: 'text',
+        message: chalk.blue('Text Color (hex):'),
+        default: '#ffffff',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    },
+    {
+        type: 'input',
+        name: 'cardBg',
+        message: chalk.blue('Card Background Color (hex):'),
+        default: '#1f1f1f',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    },
+    {
+        type: 'input',
+        name: 'hover',
+        message: chalk.blue('Hover Color (hex):'),
+        default: '#ff1a1a',
+        validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
+    }
     ]
 };
 
@@ -187,7 +208,15 @@ async function setupWizard() {
                 ...systemConfig,
                 version: "11.0.0"
             },
-            theme: themeConfig,
+            theme: {
+                primary: themeConfig.primary,
+                secondary: themeConfig.secondary,
+                accent: themeConfig.accent,
+                background: themeConfig.background,
+                text: themeConfig.text,
+                cardBg: themeConfig.cardBg,
+                hover: themeConfig.hover
+            },
             mongodb: {
                 uri: dbConfig.mongoUri
             },

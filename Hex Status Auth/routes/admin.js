@@ -7,8 +7,16 @@ const express = require('express');
 
 // Add this line to parse JSON bodies
 router.use(express.json());
+const defaultTheme = {
+    primary: '#ff0000',
+    secondary: '#1a1a1a',
+    accent: '#ff3333',
+    background: '#0a0a0a',
+    text: '#ffffff',
+    cardBg: '#1f1f1f',
+    hover: '#ff1a1a'
+};
 
-// Helper function to create config object from settings
 function createConfigFromSettings(settings) {
     return {
         Site: {
@@ -20,18 +28,12 @@ function createConfigFromSettings(settings) {
             github: settings?.urls?.github || '#',
             thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
         },
-        theme: {
-            primary: settings?.theme?.primary || '#ff0000',
-            secondary: settings?.theme?.secondary || '#000000',
-            accent: settings?.theme?.accent || '#ff3333',
-            background: settings?.theme?.background || '#1a1a1a'
-        }
+        theme: settings?.theme || defaultTheme
     };
 }
-
 // Update all route handlers to use the config object
 router.get('/login', async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     const config = createConfigFromSettings(settings);
     res.render('login', { settings, config });
 });
@@ -63,7 +65,7 @@ router.post('/login', async (req, res) => {
     }
 });
 router.get('/dashboard', adminAuth, async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     const services = await Service.find();
     
     const config = {
@@ -76,12 +78,7 @@ router.get('/dashboard', adminAuth, async (req, res) => {
             github: settings?.urls?.github || '#',
             thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
         },
-        theme: {
-            primary: settings?.theme?.primary || '#ff0000',
-            secondary: settings?.theme?.secondary || '#000000',
-            accent: settings?.theme?.accent || '#ff3333',
-            background: settings?.theme?.background || '#1a1a1a'
-        }
+  theme: settings?.theme || defaultTheme
     };
 
     res.render('dashboard', {
@@ -92,12 +89,23 @@ router.get('/dashboard', adminAuth, async (req, res) => {
 });
 router.post('/settings/site', adminAuth, async (req, res) => {
     try {
-        const { siteName, description, themeColor } = req.body;
-        const settings = await Settings.findOne();
+        const { siteName, description, theme } = req.body;
+           const settings = await Settings.findOne();
         
+        // Update site info
         settings.site.name = siteName;
         settings.site.description = description;
-        settings.theme.primary = themeColor;
+        
+        // Update theme with all color properties
+        settings.theme = {
+            primary: theme.primary,
+            secondary: theme.secondary,
+            accent: theme.accent,
+            background: theme.background,
+            text: theme.text,
+            cardBg: theme.cardBg,
+            hover: theme.hover
+        };
         
         await settings.save();
 
@@ -113,6 +121,7 @@ router.post('/settings/site', adminAuth, async (req, res) => {
         });
     }
 });
+
 
 router.post('/services/add', adminAuth, async (req, res) => {
     try {
@@ -133,7 +142,7 @@ router.post('/services/add', adminAuth, async (req, res) => {
 });
 
 router.get('/services', adminAuth, async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     const services = await Service.find();
     
     const config = {
@@ -146,12 +155,7 @@ router.get('/services', adminAuth, async (req, res) => {
             github: settings?.urls?.github || '#',
             thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
         },
-        theme: {
-            primary: settings?.theme?.primary || '#ff0000',
-            secondary: settings?.theme?.secondary || '#000000',
-            accent: settings?.theme?.accent || '#ff3333',
-            background: settings?.theme?.background || '#1a1a1a'
-        }
+  theme: settings?.theme || defaultTheme
     };
 
     res.render('services', {
@@ -180,7 +184,7 @@ router.post('/services/edit/:id', adminAuth, async (req, res) => {
 });
 
 router.get('/services/history/:id', adminAuth, async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     const service = await Service.findById(req.params.id);
     res.render('serviceHistory', {
         settings,
@@ -188,31 +192,8 @@ router.get('/services/history/:id', adminAuth, async (req, res) => {
         admin: req.admin
     });
 });
-
-
-// Helper function to create config object from settings
-function createConfigFromSettings(settings) {
-    return {
-        Site: {
-            name: settings?.site?.name || 'Hex Status',
-            description: settings?.site?.description || 'Service Status Monitor',
-            footer: settings?.site?.footer || 'Hex Status'
-        },
-        URLs: {
-            github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
-        },
-        theme: {
-            primary: settings?.theme?.primary || '#ff0000',
-            secondary: settings?.theme?.secondary || '#000000',
-            accent: settings?.theme?.accent || '#ff3333',
-            background: settings?.theme?.background || '#1a1a1a'
-        }
-    };
-}
-
 router.get('/users', adminAuth, async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     const users = await Admin.find({}, 'username email createdAt');
     
     const config = createConfigFromSettings(settings);
@@ -286,7 +267,7 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
 });
 
 router.get('/settings', adminAuth, async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     
     const config = {
         Site: {
@@ -298,12 +279,7 @@ router.get('/settings', adminAuth, async (req, res) => {
             github: settings?.urls?.github || '#',
             thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
         },
-        theme: {
-            primary: settings?.theme?.primary || '#ff0000',
-            secondary: settings?.theme?.secondary || '#000000',
-            accent: settings?.theme?.accent || '#ff3333',
-            background: settings?.theme?.background || '#1a1a1a'
-        }
+  theme: settings?.theme || defaultTheme
     };
 
     res.render('settings', {
@@ -326,7 +302,7 @@ router.post('/settings/account', adminAuth, async (req, res) => {
 });
 
 router.get('/register', async (req, res) => {
-    const settings = await Settings.findOne();
+       const settings = await Settings.findOne();
     const existingAdmin = await Admin.findOne({});
     
     const config = {
@@ -339,12 +315,7 @@ router.get('/register', async (req, res) => {
             github: settings?.urls?.github || '#',
             thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
         },
-        theme: {
-            primary: settings?.theme?.primary || '#ff0000',
-            secondary: settings?.theme?.secondary || '#000000',
-            accent: settings?.theme?.accent || '#ff3333',
-            background: settings?.theme?.background || '#1a1a1a'
-        }
+  theme: settings?.theme || defaultTheme
     };
 
     res.render('register', {
@@ -357,7 +328,7 @@ router.get('/register', async (req, res) => {
 
 router.post('/register', async (req, res) => {
     try {
-        const settings = await Settings.findOne();
+           const settings = await Settings.findOne();
         const existingAdmin = await Admin.findOne({});
         if (existingAdmin) {
             return res.render('register', {
@@ -378,7 +349,7 @@ router.post('/register', async (req, res) => {
         await admin.save();
         res.redirect('login');
     } catch (error) {
-        const settings = await Settings.findOne();
+           const settings = await Settings.findOne();
         res.render('register', {
             settings,
             error: 'Registration failed. Please try again.',

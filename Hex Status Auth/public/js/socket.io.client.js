@@ -1,16 +1,10 @@
 class StatusMonitorClient {
     constructor() {
-        this.socket = io({
-            reconnectionAttempts: Infinity,
-            reconnectionDelay: 2000,
-            timeout: 15000,
-            pingTimeout: 10000,
-            pingInterval: 5000
-        });
-
+        this.socket = io();
         this.retryDelay = 5000;
         this.maxRetries = 5;
         this.retryCount = 0;
+        this.services = [];
         this.initializeSocketListeners();
     }
 
@@ -18,30 +12,56 @@ class StatusMonitorClient {
         this.socket.on('connect', () => this.handleConnect());
         this.socket.on('disconnect', () => this.handleDisconnect());
         this.socket.on('error', (error) => this.handleError(error));
-        this.socket.on('statusUpdate', (data) => this.handleStatusUpdate(data));
         this.socket.on('serviceUpdate', (data) => this.handleServiceUpdate(data));
-        this.socket.on('initialState', (data) => this.handleInitialState(data));
         this.socket.on('reconnect', () => this.handleReconnect());
+        
+        // Add this new handler for initial state
+        this.socket.on('initialState', (data) => {
+            this.services = data;
+            this.updateOverallStats();
+        });
+
+        // Update the statusUpdate handler
+        this.socket.on('statusUpdate', (data) => {
+            if (!data || !data.serviceName) return;
+            
+            // Update the service in our local array
+            const serviceIndex = this.services.findIndex(s => s.name === data.serviceName);
+            if (serviceIndex !== -1) {
+                this.services[serviceIndex] = {...this.services[serviceIndex], ...data};
+            }
+
+            const serviceElement = document.getElementById(`service-${data.serviceName.replace(/[^a-zA-Z0-9]/g, '_')}`);
+            if (serviceElement) {
+                const statusBadge = serviceElement.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = `status-badge ${data.status ? 'status-online' : 'status-offline'}`;
+                    statusBadge.textContent = data.status ? 'Online' : 'Offline';
+                }
+            }
+            
+            // Update overall stats after each status update
+            this.updateOverallStats();
+        });
+
+        // Fixed ping update handler
         this.socket.on('pingUpdate', (data) => {
             const pingElement = document.getElementById(`ping-${data.serviceName}`);
             if (pingElement) {
                 pingElement.textContent = `${Math.round(data.ping)}ms`;
                 pingElement.classList.add('ping-update');
-                setTimeout(() => pingElement.classList.remove('ping-update'), 1000);
+                setTimeout(() => pingElement.classList.remove('ping-update'), 3000);
             }
         });
     }
 
-    async pingIpAndPort(ip, port) {
-        return new Promise((resolve) => {
-            const start = performance.now();
-            const socket = new WebSocket(`ws://${ip}:${port}`);
-            socket.onopen = () => {
-                const end = performance.now();
-                socket.close();
-                resolve(end - start);
-            };
-            socket.onerror = () => resolve(null);
+    updateDowntimeBar(downtimeBar, statusHistory) {
+        downtimeBar.innerHTML = '';
+        statusHistory.forEach(check => {
+            const segment = document.createElement('div');
+            segment.className = `status-segment ${check.status ? 'status-up' : 'status-down'}`;
+            segment.style.width = `${100 / Math.min(20, statusHistory.length)}%`;
+            downtimeBar.appendChild(segment);
         });
     }
 
@@ -61,6 +81,7 @@ class StatusMonitorClient {
     }
 
     handleError(error) {
+        console.error('Socket error:', error);
         if (this.retryCount < this.maxRetries) {
             this.retryCount++;
             this.updateConnectionStatus('warning');
@@ -86,35 +107,6 @@ class StatusMonitorClient {
         }
     }
 
-    formatUptime(percentage) {
-        return `${Number(percentage).toFixed(2)}%`;
-    }
-
-    formatPing(ms) {
-        return ms !== null ? `${Math.round(ms)}ms` : 'N/A';
-    }
-
-    handleInitialState(services) {
-        if (!services || services.length === 0) return;
-
-        services.forEach(async (service) => {
-            const ping = await this.pingService(service);
-            this.updateServiceDisplay({
-                ...service,
-                responseTime: ping
-            });
-        });
-        this.updateOverallStats(services);
-    }
-
-    async pingService(service) {
-        if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(service.url)) {
-            const [ip, port] = service.url.split(':');
-            return await this.pingIpAndPort(ip, port || 80);
-        }
-        return null; // HTTP-based services can use existing logic.
-    }
-
     handleServiceUpdate(data) {
         this.updateServiceDisplay(data);
     }
@@ -124,38 +116,36 @@ class StatusMonitorClient {
         if (!serviceEl) return;
 
         const uptime = (service.uptime / Math.max(service.checks, 1)) * 100;
-
-        // Update status badge
+        
         const badge = serviceEl.querySelector('.status-badge');
         if (badge) {
             badge.className = `status-badge ${service.status ? 'status-online' : 'status-offline'}`;
+            badge.textContent = service.status ? 'Online' : 'Offline';
         }
 
-        // Update metrics
-        const uptimeEl = serviceEl.querySelector('.metric-value[id^="uptime-"]');
+        const uptimeEl = serviceEl.querySelector(`#uptime-${service.name}`);
         if (uptimeEl) {
-            uptimeEl.textContent = this.formatUptime(uptime);
+            uptimeEl.textContent = `${uptime.toFixed(2)}%`;
         }
 
-        const pingEl = serviceEl.querySelector('.metric-value[id^="ping-"]');
+        const pingEl = serviceEl.querySelector(`#ping-${service.name}`);
         if (pingEl) {
-            pingEl.textContent = this.formatPing(service.responseTime);
+            pingEl.textContent = `${Math.round(service.responseTime || 0)}ms`;
         }
     }
 
-    updateOverallStats(services) {
-        const stats = {
-            totalServices: services.length,
-            onlineCount: services.filter(s => s.status).length,
-            totalUptime: services.reduce((acc, service) => {
-                return acc + ((service.uptime / Math.max(service.checks, 1)) * 100);
-            }, 0)
-        };
+    updateOverallStats() {
+        const onlineCount = this.services.filter(s => s.status).length;
+        const totalUptime = this.services.reduce((acc, service) => {
+            const uptime = (service.uptime / Math.max(service.checks, 1)) * 100;
+            return acc + uptime;
+        }, 0);
+        
+        const averageUptime = this.services.length > 0 ? totalUptime / this.services.length : 0;
 
-        const averageUptime = stats.totalServices > 0 ? stats.totalUptime / stats.totalServices : 0;
-
-        this.updateElement('online-count', stats.onlineCount);
-        this.updateElement('overall-uptime', this.formatUptime(averageUptime));
+        // Update UI elements with animation
+        this.updateElement('overall-uptime', `${averageUptime.toFixed(2)}%`);
+        this.updateElement('online-count', onlineCount);
     }
 
     updateElement(id, value) {

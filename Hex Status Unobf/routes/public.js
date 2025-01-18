@@ -18,22 +18,30 @@ router.get('/', async (req, res) => {
         };
     });
 
+    const defaultTheme = {
+        primary: '#ff0000',
+        secondary: '#1a1a1a',
+        accent: '#ff3333',
+        background: '#0a0a0a',
+        text: '#ffffff',
+        cardBg: '#1f1f1f',
+        hover: '#ff1a1a'
+    };
+
     res.render('index', {
         settings,
         services,
         serviceHistory,
         config: {
-            theme: settings?.theme || {
-                primary: '#ff0000',
-                secondary: '#000000',
-                accent: '#ff3333',
-                background: '#1a1a1a'
+            theme: settings?.theme || defaultTheme,
+            Site: {
+                name: settings?.site?.name || 'Hex Status',
+                description: settings?.site?.description || 'Service Status Monitor',
+                footer: settings?.site?.footer || 'Hex Status'
             }
         },
-        title: settings?.site?.name || 'Hex Status',
-        description: settings?.site?.description || 'Service Status Monitor',
-        footer: settings?.site?.footer || 'Hex Status',
-        github: settings?.urls?.github || '#'
+        title: settings?.site?.name || 'Hex Status'
     });
 });
+
 module.exports = router;

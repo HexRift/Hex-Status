@@ -206,9 +206,35 @@ function closeModal() {
         modal.style.display = 'none';
     }
 }
+document.addEventListener('DOMContentLoaded', () => {
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            const mobileNav = document.getElementById('mobileNav');
+            if (mobileNav) {
+                mobileNav.classList.toggle('active');
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-bars');
+                    icon.classList.toggle('fa-times');
+                }
+            }
+        });
+    }
+});
+
 
 // Menu Toggle Functionality
 const menuToggle = document.getElementById('menuToggle');
+if (menuToggle) {
+    menuToggle.addEventListener('click', function() {
+        document.getElementById('mobileNav').classList.toggle('active');
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-bars');
+        icon.classList.toggle('fa-times');
+    });
+}
+
 const mobileNav = document.getElementById('mobileNav');
 
 if (menuToggle && mobileNav) {

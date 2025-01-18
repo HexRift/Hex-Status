@@ -22,9 +22,12 @@ class SettingsService {
                 },
                 theme: {
                     primary: '#ff0000',
-                    secondary: '#000000',
+                    secondary: '#1a1a1a',
                     accent: '#ff3333',
-                    background: '#1a1a1a'
+                    background: '#0a0a0a',
+                    text: '#ffffff',
+                    cardBg: '#1f1f1f',
+                    hover: '#ff1a1a'
                 },
                 mongodb: {
                     uri: 'mongodb://localhost:27017/Hex-Status'
@@ -40,7 +43,42 @@ class SettingsService {
     static async updateSettings(newSettings) {
         const settings = await Settings.findOne();
         if (settings) {
-            Object.assign(settings, newSettings);
+            if (newSettings.theme) {
+                settings.theme = {
+                    ...settings.theme,
+                    ...newSettings.theme
+                };
+            }
+            if (newSettings.site) {
+                settings.site = {
+                    ...settings.site,
+                    ...newSettings.site
+                };
+            }
+            if (newSettings.urls) {
+                settings.urls = {
+                    ...settings.urls,
+                    ...newSettings.urls
+                };
+            }
+            if (newSettings.system) {
+                settings.system = {
+                    ...settings.system,
+                    ...newSettings.system
+                };
+            }
+            if (newSettings.mongodb) {
+                settings.mongodb = {
+                    ...settings.mongodb,
+                    ...newSettings.mongodb
+                };
+            }
+            if (newSettings.bot) {
+                settings.bot = {
+                    ...settings.bot,
+                    ...newSettings.bot
+                };
+            }
             await settings.save();
         }
         return settings;

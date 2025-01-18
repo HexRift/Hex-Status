@@ -7,24 +7,58 @@ class SettingsManager {
     initializeEventListeners() {
         document.getElementById('accountForm')?.addEventListener('submit', this.handleAccountUpdate.bind(this));
         document.getElementById('siteConfigForm')?.addEventListener('submit', this.handleSiteConfigUpdate.bind(this));
-
-        // Real-time theme preview
-        const colorPicker = document.querySelector('input[name="themeColor"]');
-        if (colorPicker) {
-            colorPicker.addEventListener('input', this.handleThemePreview.bind(this));
-        }
     }
 
     initializeColorPickers() {
-        const colorInputs = document.querySelectorAll('input[type="color"]');
+        const colorInputs = document.querySelectorAll('.color-input input[type="color"]');
         colorInputs.forEach(input => {
+            // Real-time preview
+            input.addEventListener('input', (e) => {
+                const property = e.target.dataset.property;
+                const value = e.target.value;
+                if (property) {
+                    document.documentElement.style.setProperty(`--${property}`, value);
+                    const valueDisplay = e.target.parentElement.querySelector('.color-value');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                }
+            });
+
+            // Final color selection
             input.addEventListener('change', (e) => {
                 const property = e.target.dataset.property;
+                const value = e.target.value;
                 if (property) {
-                    document.documentElement.style.setProperty(`--${property}`, e.target.value);
+                    this.updateThemeConfig({
+                        [property]: value
+                    });
                 }
             });
         });
+    }
+
+    async updateThemeConfig(updates) {
+        try {
+            const response = await fetch('/settings/site', {  // Changed from /settings/theme
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    theme: updates 
+                })
+            });
+
+            if (response.ok) {
+                this.showNotification('Theme updated successfully');
+            } else {
+                const error = await response.json();
+                this.showNotification(error.message || 'Failed to update theme', 'error');
+            }
+        } catch (error) {
+            this.showNotification('Error updating theme settings', 'error');
+        }
     }
 
     async handleAccountUpdate(event) {
@@ -32,7 +66,6 @@ class SettingsManager {
         const formData = new FormData(event.target);
         const data = Object.fromEntries(formData);
 
-        // Only include password if it's not empty
         if (!data.newPassword) {
             delete data.newPassword;
         }
@@ -59,9 +92,23 @@ class SettingsManager {
 
     async handleSiteConfigUpdate(event) {
         event.preventDefault();
+        
+        // Collect all color values from color pickers
+        const colorInputs = document.querySelectorAll('.color-input input[type="color"]');
+        const themeColors = {};
+        
+        colorInputs.forEach(input => {
+            const property = input.dataset.property;
+            themeColors[property] = input.value;
+        });
+    
         const formData = new FormData(event.target);
-        const data = Object.fromEntries(formData);
-
+        const data = {
+            siteName: formData.get('siteName'),
+            description: formData.get('description'),
+            theme: themeColors
+        };
+    
         try {
             const response = await fetch('/settings/site', {
                 method: 'POST',
@@ -70,7 +117,7 @@ class SettingsManager {
                 },
                 body: JSON.stringify(data)
             });
-
+    
             if (response.ok) {
                 this.showNotification('Site configuration updated successfully');
                 setTimeout(() => location.reload(), 1000);
@@ -82,11 +129,8 @@ class SettingsManager {
             this.showNotification('Error updating site configuration', 'error');
         }
     }
-
-    handleThemePreview(event) {
-        const color = event.target.value;
-        document.documentElement.style.setProperty('--primary', color);
-    }
+    
+    
 
     showNotification(message, type = 'success') {
         const notification = document.createElement('div');
@@ -101,7 +145,7 @@ class SettingsManager {
     }
 }
 
-document.getElementById('menuToggle').addEventListener('click', function() {
+document.getElementById('menuToggle')?.addEventListener('click', function() {
     document.getElementById('mobileNav').classList.toggle('active');
     const icon = this.querySelector('i');
     icon.classList.toggle('fa-bars');
