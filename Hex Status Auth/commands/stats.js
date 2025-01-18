@@ -26,7 +26,7 @@ async function handleStatsCommand(interaction, { client, settings }) {
                 `**Average Response:** ${Math.round(avgResponseTime)}ms`,
                 `**Overall Uptime:** ${overallUptime.toFixed(2)}%`
             ].join('\n'),
-            inline: falsec
+            inline: false
         })
         .setImage('attachment://stats.png')
         .setTimestamp()
