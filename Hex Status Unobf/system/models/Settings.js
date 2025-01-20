@@ -8,12 +8,12 @@ const SettingsSchema = new mongoose.Schema({
     },
     urls: {
         github: { type: String, default: 'https://hexmodz.com/github' },
-        thumbnail: { type: String, default: 'https://hexmodz.com/assets/logo.png' }
+        thumbnail: { type: String, default: 'https://hexarion.net/Hex-Status.png' }
     },
     system: {
         port: { type: Number, default: 3000 },
         refresh_interval: { type: Number, default: 1000 },
-        version: { type: String, default: '11.0.0' }
+        version: { type: String, default: '12.0.0' }
     },
     theme: {
         primary: { type: String, default: '#ff0000' },

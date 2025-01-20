@@ -26,7 +26,7 @@ function createConfigFromSettings(settings) {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
         theme: settings?.theme || defaultTheme
     };
@@ -76,7 +76,7 @@ router.get('/dashboard', adminAuth, async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
@@ -153,7 +153,7 @@ router.get('/services', adminAuth, async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
@@ -277,7 +277,7 @@ router.get('/settings', adminAuth, async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
@@ -313,7 +313,7 @@ router.get('/register', async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
