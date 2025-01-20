@@ -7,7 +7,6 @@ const { MonitoringService } = require('./system/services/MonitoringService');
 const { BotService } = require('./system/services/BotService');
 const SettingsService = require('./system/services/SettingsService');
 const colors = require('colors');
-const { Auth } = require('./system/services/auth-api');
 
 class EnhancedStatusMonitor {
     constructor() {
@@ -22,9 +21,6 @@ class EnhancedStatusMonitor {
             await this.connectWithRetry();
             
             console.log("[Database]".green, "Connected to MongoDB");
-
-             // Verify license after database connection
-             await Auth();
 
             const settings = await SettingsService.getSettings();
             this.botService = new BotService(settings);

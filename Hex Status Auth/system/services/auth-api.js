@@ -54,7 +54,9 @@ class AuthClient {
     #PRODUCT_ID = '40';
     #API_BASE_URL = 'https://api.hexarion.net/api';
     #currentVersion = '12.0.0'; // Hardcoded version
-
+    constructor() {
+        this.#webhookManager = WebhookManager.getInstance();
+    }
     async validateLicense() {
         try {
             const license = await License.findOne().sort({ _id: -1 });
@@ -141,8 +143,8 @@ class AuthClient {
                 inline: true
             },
             {
-                name: 'Details',
-                value: details,
+                name: 'Version',
+                value: `${this.#currentVersion}`,
                 inline: true
             }], {
                 title: 'Authentication Success',
@@ -163,6 +165,11 @@ class AuthClient {
             {
                 name: 'Product',
                 value: 'Hex Status',
+                inline: true
+            },
+            {
+                name: 'Version',
+                value: `${this.#currentVersion}`,
                 inline: true
             },
             {
@@ -188,6 +195,11 @@ class AuthClient {
             {
                 name: 'Product',
                 value: 'Hex Status',
+                inline: true
+            },
+            {
+                name: 'Version',
+                value: `${this.#currentVersion}`,
                 inline: true
             },
             {
