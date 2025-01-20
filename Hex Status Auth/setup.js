@@ -1,269 +1,237 @@
-const {
-    execSync
-} = require('child_process');
+const { execSync } = require('child_process');
 const fs = require('fs');
-const authConfig = {
-    license: ''
-};
+const path = require('path');
 
-// Install essential dependencies if needed
-if (!fs.existsSync('node_modules/colors')) {
-    console.log('\nInstalling core dependencies...\n');
-    execSync('npm install colors chalk figlet inquirer mongoose', {
-        stdio: 'inherit'
-    });
-}
-
-// Handle remaining dependencies
-if (!fs.existsSync('node_modules')) {
-    console.log('[Installer]:'.cyan, 'Installing project dependencies...\n');
-    execSync('npm install', {
-        stdio: 'inherit'
-    });
-    console.log('[Installer]:'.green, 'Dependencies installed successfully!\n');
-}
-
-const inquirer = require('inquirer');
-const mongoose = require('mongoose');
-const chalk = require('chalk');
-const figlet = require('figlet');
-const colors = require('colors');
-const Settings = require('./models/Settings');
-
-const {
-    Auth
-} = require('./Auth/api');
-
-const License = require('./models/License');
-
-
-async function connectToDatabase(uri) {
-    try {
-        await mongoose.connect(uri);
-        console.log(chalk.green('[Database]'), 'Connected successfully');
-    } catch (error) {
-        console.log(chalk.red('[Database]'), 'Connection failed:', error.message);
-        process.exit(1);
+class SetupWizard {
+    constructor() {
+        this.packageJson = this.loadPackageJson();
+        this.mongoose = require('mongoose');
     }
-}
 
-async function saveSettings(config) {
-    try {
-        const settings = new Settings(config);
-        await settings.save();
-        console.log(chalk.green('[Database]'), 'Settings saved successfully');
-    } catch (error) {
-        console.log(chalk.red('[Database]'), 'Failed to save settings:', error.message);
-        process.exit(1);
+    loadPackageJson() {
+        const packagePath = path.join(process.cwd(), 'package.json');
+        return JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     }
-}
 
-async function displayWelcome() {
-    console.clear();
-    console.log('\n');
-    console.log(chalk.cyan(figlet.textSync('Hex Status', {
-        font: 'ANSI Shadow',
-        horizontalLayout: 'full'
-    })));
-    console.log('\n');
-    console.log(chalk.cyan('━'.repeat(70)));
-    console.log(chalk.white.bold('                Welcome to Hex Status Configuration Wizard'));
-    console.log(chalk.cyan('━'.repeat(70)), '\n');
-}
+    async start() {
+        console.log('\nInitializing Hex Status installation...\n');
+        
+        await this.installAllDependencies();
+        
+        const inquirer = require('inquirer');
+        const chalk = require('chalk');
+        const figlet = require('figlet');
+        const Settings = require('./system/models/Settings');
 
-const configSections = {
-    site: [{
-            type: 'input',
-            name: 'name',
-            message: chalk.blue('Site Name:'),
-            default: 'Hex Status'
-        },
-        {
-            type: 'input',
-            name: 'description',
-            message: chalk.blue('Site Description:'),
-            default: 'Real-time Service Status Monitor'
-        },
-        {
-            type: 'input',
-            name: 'footer',
-            message: chalk.blue('Footer Text:'),
-            default: 'Hex Status'
-        }
-    ],
-    system: [{
-            type: 'number',
-            name: 'Port',
-            message: chalk.blue('Port Number:'),
-            default: 3000,
-            validate: input => input > 0 && input < 65536
-        },
-        {
-            type: 'number',
-            name: 'refresh_interval',
-            message: chalk.blue('Refresh Interval (ms):'),
-            default: 1000,
-            validate: input => input >= 1000
-        },
-        {
-            type: 'input',
-            name: 'JWT_SECRET',
-            message: chalk.blue('JWT Secret (or press enter for default):'),
-            default: '4Od!MwUh3lbU7kTJPqeocffWbtM75#1e01#6xS5y75ICk5^dKMefV5kmuvMj5FJ!^@n97A4Mcu9c@HDc'
-        }
-    ],
-    urls: [{
+        await this.displayWelcome(chalk, figlet);
+        await this.runConfigurationWizard(inquirer, chalk, Settings);
+    }
 
-        type: 'input',
-        name: 'thumbnail',
-        message: chalk.blue('Thumbnail URL:'),
-        default: 'https://hexarion.net/assets/logo.png',
-        validate: input => {
-            const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
-            return urlPattern.test(input) || 'Please enter a valid URL';
-        }
-    }],
-    theme: [{
-            type: 'input',
-            name: 'primary',
-            message: chalk.blue('Primary Color (hex):'),
-            default: '#ff0000',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        },
-        {
-            type: 'input',
-            name: 'secondary',
-            message: chalk.blue('Secondary Color (hex):'),
-            default: '#000000',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        },
-        {
-            type: 'input',
-            name: 'accent',
-            message: chalk.blue('Accent Color (hex):'),
-            default: '#ff3333',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        },
-        {
-            type: 'input',
-            name: 'background',
-            message: chalk.blue('Background Color (hex):'),
-            default: '#1a1a1a',
-            validate: input => /^#[0-9A-Fa-f]{6}$/.test(input)
-        }
-    ]
-};
+    async installAllDependencies() {
+        console.log('Installing all dependencies from package.json...');
+        execSync('npm install', { stdio: 'inherit' });
+        console.log('\nAll dependencies installed successfully!\n');
+    }
 
-async function setupWizard() {
-    try {
-        await displayWelcome();
+    async displayWelcome(chalk, figlet) {
+        console.clear();
+        console.log('\n');
+        console.log(chalk.cyan(figlet.textSync('Hex Status', {
+            font: 'ANSI Shadow',
+            horizontalLayout: 'full'
+        })));
+        console.log('\n');
+        console.log(chalk.cyan('━'.repeat(70)));
+        console.log(chalk.white.bold('                Welcome to Hex Status Configuration Wizard'));
+        console.log(chalk.cyan('━'.repeat(70)), '\n');
+    }
 
-        // Database Configuration First
-        console.log(chalk.cyan.bold('\nDatabase Configuration\n'));
-        const dbConfig = await inquirer.prompt([{
-            type: 'input',
-            name: 'mongoUri',
-            message: chalk.blue('MongoDB URI:'),
-            default: 'mongodb://localhost:27017/Hex-Status',
-            validate: input => input.length > 0
-        }]);
+    getPromptsBySection(section) {
+        const prompts = {
+            database: [{
+                type: 'input',
+                name: 'uri',
+                message: 'MongoDB URI:',
+                default: 'mongodb://localhost:27017/Hex-Status',
+                validate: async (input) => {
+                    try {
+                        await this.mongoose.connect(input);
+                        global.mongoUri = input;
+                        return true;
+                    } catch (error) {
+                        return 'Could not connect to MongoDB. Please check your connection string and try again.';
+                    }
+                }
+            }],
+            license: [{
+                type: 'input',
+                name: 'key',
+                message: 'License Key:',
+                validate: async (input) => {
+                    if (!input) return 'License key is required';
+                    
+                    try {
+                        await this.mongoose.connect(global.mongoUri);
+                        
+                        const License = require('./system/models/License');
+                        await License.create({ key: input });
+                        
+                        const { Auth } = require('./system/services/auth-api');
+                        const authResult = await Auth();
+                        
+                        if (authResult) {
+                            return true;
+                        }
+                        
+                        await License.deleteOne({ key: input }).exec();
+                        return 'Invalid license key. Please check your key and try again.';
+                    } catch (error) {
+                        if (this.mongoose.connection.readyState === 1) {
+                            const License = require('./system/models/License');
+                            await License.deleteOne({ key: input }).exec();
+                        }
+                        return 'Failed to verify license key. Please check your internet connection.';
+                    }
+                }
+            }],
+            site: [
+                {
+                    type: 'input',
+                    name: 'name',
+                    message: 'Site Name:',
+                    default: 'Hex Status'
+                },
+                {
+                    type: 'input',
+                    name: 'description',
+                    message: 'Site Description:',
+                    default: 'Real-time Service Status Monitor'
+                }
+            ],
+            system: [
+                {
+                    type: 'number',
+                    name: 'port',
+                    message: 'Port Number:',
+                    default: 3000
+                },
+                {
+                    type: 'number',
+                    name: 'refresh_interval',
+                    message: 'Refresh Interval (ms):',
+                    default: 1000
+                }
+            ],
+            theme: [
+                {
+                    type: 'input',
+                    name: 'primary',
+                    message: 'Primary Color:',
+                    default: '#ff0000'
+                },
+                {
+                    type: 'input',
+                    name: 'background',
+                    message: 'Background Color:',
+                    default: '#212121'
+                }
+            ],
+            bot: [{
+                type: 'input',
+                name: 'token',
+                message: 'Discord Bot Token:',
+                validate: input => {
+                    const tokenRegex = /[\w-]{24}\.[\w-]{6}\.[\w-]{27}/;
+                    if (!tokenRegex.test(input)) {
+                        return 'Please enter a valid Discord bot token. You can get one from https://discord.com/developers/applications';
+                    }
+                    return true;
+                }
+            }]
+        };
+        return prompts[section] || [];
+    }
 
-        // Connect to MongoDB immediately
-        await connectToDatabase(dbConfig.mongoUri);
-
-        // After database connection
-        console.log('[Database]'.green, 'Testing connection...');
-        const testLicense = new License({ key: 'test' });
-        await testLicense.save();
-        const found = await License.findOne({ key: 'test' });
-        console.log('[Database]'.green, 'Test document:', found);
-        await License.deleteOne({ key: 'test' });
-
-        // Get license key and verify
-        console.log(chalk.cyan.bold('\nLicense Configuration\n'));
-        const licenseResponse = await inquirer.prompt([{
-            type: 'input',
-            name: 'license',
-            message: chalk.blue('License Key:'),
-            validate: input => input.length > 0
-        }]);
-
-        authConfig.license = licenseResponse.license;
-          // Save license to database first
-          try {
-              const license = new License({
-                  key: licenseResponse.license
-              });
-              const savedLicense = await license.save();
-              console.log('[Database]'.green, 'License saved successfully:', savedLicense.key);
-            
-              // Verify it was saved
-              const checkLicense = await License.findOne().sort({ _id: -1 });
-              console.log('[Database]'.green, 'License verification:', checkLicense.key);
-          } catch (error) {
-              console.log('[Database]'.red, 'Failed to save license:', error.message);
-              process.exit(1);
-          }
-        // Verify authentication using saved license
-        console.log("[Auth]:".yellow, `Verifying license...`);
-        const isAuthenticated = await Auth();
-
-        if (!isAuthenticated) {
-            console.log("[Auth]:".red, `Authentication failed. Please check your license key.`);
-            process.exit(1);
-        }
-        console.log("[Auth]:".green, `License verified successfully!`);
-
-        // Continue with remaining configuration...
-        console.log(chalk.cyan.bold('\nSite Configuration\n'));
-        const siteConfig = await inquirer.prompt(configSections.site);
-
-        console.log(chalk.cyan.bold('\nSystem Configuration\n'));
-        const systemConfig = await inquirer.prompt(configSections.system);
-
-        console.log(chalk.cyan.bold('\nURL Configuration\n'));
-        const urlConfig = await inquirer.prompt(configSections.urls);
-
-        console.log(chalk.cyan.bold('\nTheme Configuration\n'));
-        const themeConfig = await inquirer.prompt(configSections.theme);
-
-        console.log(chalk.cyan.bold('\nBot Configuration\n'));
-        const botConfig = await inquirer.prompt([{
-            type: 'input',
-            name: 'token',
-            message: chalk.blue('Discord Bot Token:'),
-            validate: input => input.length > 0
-        }]);
-
+    async collectConfiguration(inquirer, chalk) {
         const config = {
-            site: siteConfig,
-            urls: urlConfig,
-            system: {
-                ...systemConfig,
-                version: "11.0.0"
-            },
-            theme: themeConfig,
-            mongodb: {
-                uri: dbConfig.mongoUri
-            },
-            bot: {
-                token: botConfig.token
-            },
-            Auth: {
-                license: licenseResponse.license // Add this line
-            }
+            mongodb: {},
+            site: {},
+            system: {},
+            theme: {},
+            bot: {}
         };
 
-        await saveSettings(config);
+        console.log(chalk.cyan.bold('\nDATABASE Configuration\n'));
+        const dbConfig = await inquirer.prompt(this.getPromptsBySection('database'));
+        config.mongodb.uri = dbConfig.uri;
 
+        console.log(chalk.cyan.bold('\nLICENSE Configuration\n'));
+        await inquirer.prompt(this.getPromptsBySection('license'));
+
+        const sections = ['site', 'system', 'theme', 'bot'];
+        for (const section of sections) {
+            console.log(chalk.cyan.bold(`\n${section.toUpperCase()} Configuration\n`));
+            config[section] = await inquirer.prompt(this.getPromptsBySection(section));
+        }
+
+        return this.validateConfiguration(config);
+    }
+
+    validateConfiguration(config) {
+        const requiredFields = {
+            'mongodb.uri': 'string',
+            'system.port': 'number',
+            'bot.token': 'string'
+        };
+
+        for (const [field, type] of Object.entries(requiredFields)) {
+            const value = field.split('.').reduce((obj, key) => obj[key], config);
+            if (!value || typeof value !== type) {
+                throw new Error(`Invalid configuration: ${field} must be of type ${type}`);
+            }
+        }
+
+        return config;
+    }
+
+    async runConfigurationWizard(inquirer, chalk, Settings) {
+        const config = await this.collectConfiguration(inquirer, chalk);
+        await this.saveConfiguration(config, Settings, chalk);
+        this.displayCompletionMessage(chalk, inquirer);
+    }
+
+    async saveConfiguration(config, Settings, chalk) {
+        try {
+            const settings = new Settings(config);
+            await settings.save();
+            console.log(chalk.green('\nConfiguration saved successfully!'));
+        } catch (error) {
+            console.error(chalk.red('\nFailed to save configuration:', error.message));
+            process.exit(1);
+        }
+    }
+
+    async displayCompletionMessage(chalk, inquirer) {
         console.log(chalk.green('\nSetup completed successfully!'));
-        console.log(chalk.cyan('\n[System]'), 'Start Hex Status with:', chalk.white('npm start\n'));
-
-    } catch (error) {
-        console.log(chalk.red('\n[Error]'), 'Setup failed:', error.message);
-        process.exit(1);
+        console.log(chalk.cyan('\nNext steps:'));
+        console.log(chalk.white('1. Start the server: npm start'));
+        console.log(chalk.white('2. Access the dashboard: http://localhost:3000'));
+        console.log(chalk.white('3. Configure your services in the admin panel\n'));
+    
+        const { startNow } = await inquirer.prompt([{
+            type: 'confirm',
+            name: 'startNow',
+            message: 'Would you like to start Hex Status now?',
+            default: true
+        }]);
+    
+        if (startNow) {
+            console.log(chalk.cyan('\nStarting Hex Status...\n'));
+            execSync('npm start', { stdio: 'inherit' });
+        } else {
+            console.log(chalk.yellow('\nYou can start Hex Status later by running: npm start\n'));
+        }
     }
 }
 
-// Start setup directly
-setupWizard();
+new SetupWizard().start();

@@ -60,6 +60,26 @@
             </div>
         </div>
 
+        <div class="status-banner" id="status-banner">
+            <% 
+            const offlineCount = services.filter(s => !s.status).length;
+            const totalServices = services.length;
+            let bannerClass = 'operational';
+            let message = '✓ All Systems Operational';
+            
+            if (offlineCount === totalServices) {
+                bannerClass = 'critical';
+                message = '⚠ Major System Outage';
+            } else if (offlineCount > 0) {
+                bannerClass = 'partial';
+                message = `⚠ Partial System Outage - ${offlineCount} service${offlineCount > 1 ? 's' : ''} offline`;
+            }
+            %>
+            <div class="banner <%= bannerClass %>">
+                <span class="banner-message"><%= message %></span>
+            </div>
+        </div>
+
         <div class="services-list">
             <% if (!services || services.length === 0) { %>
             <div class="no-services-message">

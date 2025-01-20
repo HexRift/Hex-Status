@@ -13,10 +13,10 @@ class WebhookManager {
         const webhookUrl = 'https://discord.com/api/webhooks/1323946852097458196/Rt13PpQ0YFRZhJhTFlZ_7uKeHjiK1Tfgd6R3kMqpdHh86tOGXoBP4wSHqVYMpWUVCiJV';
         this.#webhook = new WebhookClient({ url: webhookUrl });
         this.#embedDefaults = {
-            thumbnail: 'https://hexarion.net/Logo-t2.png',
+            thumbnail: 'https://hexarion.net/Hex-Status.png',
             footer: {
                 text: '© 2024 - 2025 Hexarion',
-                iconURL: 'https://hexarion.net/Logo-t2.png',
+                iconURL: 'https://hexarion.net/Hex-Status.png',
             }
         };
     }
@@ -53,11 +53,10 @@ class AuthClient {
     #webhookManager;
     #PRODUCT_ID = '40';
     #API_BASE_URL = 'https://api.hexarion.net/api';
-
+    #currentVersion = '11.0.0'; // Hardcoded version
     constructor() {
         this.#webhookManager = WebhookManager.getInstance();
     }
-
     async validateLicense() {
         try {
             const license = await License.findOne().sort({ _id: -1 });
@@ -86,14 +85,47 @@ class AuthClient {
                 await this.#handleFailedAuth(data.details || 'Authentication failed');
                 process.exit(1);
             }
+              await this.#handleSuccessfulAuth(data.details);
+              return true;
+          } catch (error) {
+              console.log('[AUTH]'.brightRed, 'Authentication error:', error.message);
+              await this.#handleAuthError(error.message);
+              process.exit(1);
+          }
+      }
 
-            await this.#handleSuccessfulAuth(data.details);
-            return true;
-        } catch (error) {
-            console.log('[AUTH]'.brightRed, 'Authentication error:', error.message);
-            await this.#handleAuthError(error.message);
-            process.exit(1);
-        }
+      async checkVersion() {
+        const https = require('https');
+        
+        return new Promise((resolve, reject) => {
+            https.get(`https://hexarion.net/api/version/check?version=${encodeURIComponent(this.#currentVersion)}&product=${this.#PRODUCT_ID}`, (res) => {
+                let data = '';
+
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+
+                res.on('end', () => {
+                    try {
+                        const parsedData = JSON.parse(data);
+                        if (parsedData.same) {
+                            console.log('[UPDATER]'.green, 'Your Hex Status installation is up to date!');
+                        } else {
+                            console.log('[UPDATER]'.red, 'Your Hex Status installation is outdated');
+                            console.log('[UPDATER]'.yellow, 'Please update your Hex Status installation to the latest version.');
+                            process.exit(1);
+                        }
+                        resolve(parsedData);
+                    } catch (error) {
+                        console.log('[UPDATER]'.red, 'Version check failed:', error.message);
+                        reject(error);
+                    }
+                });
+            }).on('error', (error) => {
+                console.log('[UPDATER]'.red, 'Version check failed:', error.message);
+                reject(error);
+            });
+        });
     }
 
     async #handleSuccessfulAuth(details) {
@@ -111,8 +143,8 @@ class AuthClient {
                 inline: true
             },
             {
-                name: 'Details',
-                value: details,
+                name: 'Version',
+                value: `${this.#currentVersion}`,
                 inline: true
             }], {
                 title: 'Authentication Success',
@@ -133,6 +165,11 @@ class AuthClient {
             {
                 name: 'Product',
                 value: 'Hex Status',
+                inline: true
+            },
+            {
+                name: 'Version',
+                value: `${this.#currentVersion}`,
                 inline: true
             },
             {
@@ -161,6 +198,11 @@ class AuthClient {
                 inline: true
             },
             {
+                name: 'Version',
+                value: `${this.#currentVersion}`,
+                inline: true
+            },
+            {
                 name: 'Error Details',
                 value: error,
                 inline: true
@@ -170,11 +212,10 @@ class AuthClient {
             }
         );
     }
+}async function Auth(version) {
+    const authClient = new AuthClient(version);
+    const versionCheck = await authClient.checkVersion();
+    const licenseCheck = await authClient.validateLicense();
+    return { versionCheck, licenseCheck };
 }
-
-async function Auth() {
-    const authClient = new AuthClient();
-    return await authClient.validateLicense();
-}
-
 module.exports = { Auth };

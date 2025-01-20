@@ -183,7 +183,11 @@ async function handleEditService(event) {
 }
 
 // Add event listener to the form
-document.getElementById('editServiceForm').addEventListener('submit', handleEditService);
+
+const editServiceForm = document.getElementById('editServiceForm');
+if (editServiceForm) {
+    editServiceForm.addEventListener('submit', handleEditService);
+}
 
 
 function closeEditModal() {

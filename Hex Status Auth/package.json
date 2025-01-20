@@ -1,7 +1,7 @@
 {
   "name": "hex-status",
   "version": "12.0.0",
-  "description": "",
+  "description": "Real-time Service Status Monitor",
   "main": "app.js",
   "scripts": {
     "setup": "node setup.js",
