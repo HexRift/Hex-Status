@@ -59,7 +59,7 @@ class SetupWizard {
                   // First save the key so auth-api can find it
                   await License.create({ key: input });
                 
-                  const { Auth } = require('./system/services/auth-api');
+                  const { Auth } = require('./system/services/auth');
                   const authResult = await Auth();
                 
                   if (authResult) {
@@ -106,7 +106,7 @@ class SetupWizard {
                     const License = require('./system/models/License');
                     await License.create({ key: input });
                     
-                    const { Auth } = require('./system/services/auth-api');
+                    const { Auth } = require('./system/services/auth');
                     const authResult = await Auth();
                     
                     if (authResult) {
@@ -432,7 +432,7 @@ async displayCompletionMessage(chalk, inquirer) {
                 const License = require('./system/models/License');
                 await License.create({ key: input });
                 
-                const { Auth } = require('./system/services/auth-api');
+                const { Auth } = require('./system/services/auth');
                 const authResult = await Auth();
                 
                 if (authResult) {
