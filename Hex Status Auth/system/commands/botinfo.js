@@ -22,9 +22,9 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
     const overallUptime = services.reduce((acc, s) => 
         acc + ((s.uptime / Math.max(s.checks, 1)) * 100), 0) / services.length;
 
-    const version = settings.system.version || '10.0.0';
+    const version = settings.system.version || '13.0.0';
     const footer = settings.site.footer || 'Hex Status';
-    const thumbnail = settings.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png';
+    const thumbnail = settings.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png';
     const refresh_interval = settings.system.refresh_interval || 1000;
     const refreshRateInSeconds = (settings.system.refresh_interval || 1000) / 1000;
 

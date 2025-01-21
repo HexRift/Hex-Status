@@ -26,7 +26,7 @@ function createConfigFromSettings(settings) {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
         theme: settings?.theme || defaultTheme
     };
@@ -42,9 +42,6 @@ router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const admin = await Admin.findOne({ username });
-
-        // Add console.log here to debug
-        console.log('Login attempt:', { username, adminFound: !!admin });
 
         if (!admin || !(await AuthService.validateCredentials(username, password))) {
             return res.render('login', {
@@ -76,7 +73,7 @@ router.get('/dashboard', adminAuth, async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
@@ -153,7 +150,7 @@ router.get('/services', adminAuth, async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
@@ -219,9 +216,6 @@ router.post('/users/add', adminAuth, async (req, res) => {
 
         await newAdmin.save();
         
-        // Add logging to track the process
-        console.log('[Users]'.green, 'New admin created:', username);
-        
         res.json({ success: true });
     } catch (error) {
         console.error('[Users]'.red, 'Creation error:', error);
@@ -277,7 +271,7 @@ router.get('/settings', adminAuth, async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };
@@ -313,7 +307,7 @@ router.get('/register', async (req, res) => {
         },
         URLs: {
             github: settings?.urls?.github || '#',
-            thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+            thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
         },
   theme: settings?.theme || defaultTheme
     };

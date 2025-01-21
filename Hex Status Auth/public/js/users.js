@@ -18,7 +18,6 @@ document.getElementById('editUserForm').addEventListener('submit', async (e) => 
 });
 
 async function deleteUser(id) {
-    if (confirm('Are you sure you want to delete this user?')) {
         try {
             const response = await fetch(`/users/${id}`, {
                 method: 'DELETE'
@@ -30,7 +29,6 @@ async function deleteUser(id) {
             console.error('Failed to delete user:', error);
         }
     }
-}
 document.getElementById('menuToggle').addEventListener('click', function() {
     document.getElementById('mobileNav').classList.toggle('active');
     const icon = this.querySelector('i');

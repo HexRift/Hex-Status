@@ -43,9 +43,6 @@ router.post('/login', async (req, res) => {
         const { username, password } = req.body;
         const admin = await Admin.findOne({ username });
 
-        // Add console.log here to debug
-        console.log('Login attempt:', { username, adminFound: !!admin });
-
         if (!admin || !(await AuthService.validateCredentials(username, password))) {
             return res.render('login', {
                 config: createConfigFromSettings(settings),
@@ -218,9 +215,6 @@ router.post('/users/add', adminAuth, async (req, res) => {
         });
 
         await newAdmin.save();
-        
-        // Add logging to track the process
-        console.log('[Users]'.green, 'New admin created:', username);
         
         res.json({ success: true });
     } catch (error) {

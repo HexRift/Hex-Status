@@ -7,8 +7,13 @@ const { MonitoringService } = require('./system/services/MonitoringService');
 const { BotService } = require('./system/services/BotService');
 const SettingsService = require('./system/services/SettingsService');
 const colors = require('colors');
+const inquirer = require("inquirer");
+const chalk = require("chalk");
+const figlet = require("figlet");
 
-class EnhancedStatusMonitor {
+class HexStatus {
+    #PRODUCT_ID = '40';
+    #currentVersion = '13.0.0';
     constructor() {
         this.botService = null;
         this.server = null;
@@ -17,9 +22,11 @@ class EnhancedStatusMonitor {
 
     async startServer() {
         try {
-            // Enhanced MongoDB connection with retry logic
+            // Display welcome banner first
+            this.displayWelcome();
+
+            // Continue with database connection and other initialization
             await this.connectWithRetry();
-            
             console.log("[Database]".green, "Connected to MongoDB");
 
             const settings = await SettingsService.getSettings();
@@ -42,9 +49,37 @@ class EnhancedStatusMonitor {
             MonitoringService.initialize(client, settings);
 
             const PORT = settings.system.port || 3000;
-            this.server.listen(PORT, () => {
+            this.server.listen(PORT, async () => {
                 console.log("[System]".green, "Hex Status:", 'Initialized');
-                console.log("[System]".cyan, "Version:", settings.system.version);
+                
+            // Check version right after banner
+            const https = require('https');
+            await new Promise((resolve, reject) => {
+                https.get(`https://hexarion.net/api/version/check?version=${encodeURIComponent(this.#currentVersion)}&product=${this.#PRODUCT_ID}`, (res) => {
+                    let data = '';
+                    res.on('data', (chunk) => {
+                        data += chunk;
+                    });
+                    res.on('end', () => {
+                        try {
+                            const parsedData = JSON.parse(data);
+                            if (parsedData.same) {
+                                console.log('[Updater]'.green, `Hex Status (v${this.#currentVersion}) is up to date!`);
+                            } else {
+                                console.log('[Updater]'.red, `Hex Status (v${this.#currentVersion}) is outdated. Update to v${parsedData.release?.version}.`);
+                                process.exit(1);
+                            }
+                            resolve(parsedData);
+                        } catch (error) {
+                            console.log('[Updater]'.red, 'Hex Status update check failed:', error.message);
+                            reject(error);
+                        }
+                    });
+                }).on('error', (error) => {
+                    console.log('[Updater]'.red, 'Version check failed:', error.message);
+                    reject(error);
+                });
+            });
                 console.log("[System]".yellow, "Server:", `Running on port ${PORT}`);
             });
 
@@ -57,15 +92,34 @@ class EnhancedStatusMonitor {
         }
     }
 
+    // Add as a separate class method
+    displayWelcome() {
+        console.clear();
+        console.log("\n");
+        console.log(
+            chalk.red(
+                figlet.textSync("Hex Status", {
+                    font: "ANSI Shadow",
+                    horizontalLayout: "full",
+                })
+            )
+        );
+        console.log("\n");
+        console.log(chalk.red("━".repeat(70)));
+        console.log(
+            chalk.white.bold(
+                "      Welcome to Hex Status - The Ultimate Status Page Solution   "
+            )
+        );
+        console.log(chalk.red("━".repeat(70)), "\n");
+    }
     async connectWithRetry(retries = 5) {
         for (let i = 0; i < retries; i++) {
             try {
                 await mongoose.connect('mongodb://localhost:27017/Hex-Status', {
                     serverSelectionTimeoutMS: 15000,
                     connectTimeoutMS: 15000,
-                    socketTimeoutMS: 45000,
-                    useNewUrlParser: true,
-                    useUnifiedTopology: true
+                    socketTimeoutMS: 45000
                 });
                 return;
             } catch (err) {
@@ -120,4 +174,4 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error("[Error]".red, 'Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-new EnhancedStatusMonitor().startServer();
+new HexStatus().startServer();

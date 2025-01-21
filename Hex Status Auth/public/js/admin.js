@@ -158,37 +158,57 @@ function openEditModal(serviceName, serviceUrl) {
 async function handleEditService(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const data = {
-        name: formData.get('name'),
-        url: formData.get('url')
-    };
-
+    const originalName = formData.get('originalName');
+    
     try {
-        const response = await fetch(`/api/services/${formData.get('originalName')}`, {
+        // First attempt with admin prefix
+        let response = await fetch(`/services/${encodeURIComponent(originalName)}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                name: formData.get('name'),
+                url: formData.get('url')
+            })
         });
 
-        if (response.ok) {
-            window.location.reload();
-        } else {
-            throw new Error('Failed to update service');
+        // If admin route fails, try alternative route
+        if (!response.ok) {
+            response = await fetch(`/services/${encodeURIComponent(originalName)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: formData.get('name'),
+                    url: formData.get('url')
+                })
+            });
         }
+
+        if (response.ok) {
+            window.location.href = '/services';
+            return;
+        }
+
+        // Display error in modal
+        const errorModal = document.getElementById('errorModal') || 
+            document.querySelector('.modal-content');
+        if (errorModal) {
+            errorModal.innerHTML = `<div class="error-alert">Update failed. Please try again.</div>`;
+        }
+
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Service update failed:', error);
     }
 }
 
 // Add event listener to the form
-
 const editServiceForm = document.getElementById('editServiceForm');
 if (editServiceForm) {
     editServiceForm.addEventListener('submit', handleEditService);
 }
-
 
 function closeEditModal() {
     const modal = document.getElementById('editServiceModal');
@@ -275,26 +295,33 @@ if (menuToggle && mobileNav) {
 }
 async function deleteService(serviceName) {
     try {
-        const response = await fetch(`/api/services/${serviceName}`, {
+        // Try the main API endpoint
+        let response = await fetch(`/api/services/${encodeURIComponent(serviceName)}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.ok) {
+            window.location.href = '/services';
+            return;
         }
 
-        const data = await response.json();
-        if (data.success) {
-            // Refresh the page or update the UI
-            window.location.reload();
+        // Fallback to admin endpoint if needed
+        response = await fetch(`/admin/services/${encodeURIComponent(serviceName)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            window.location.href = '/services';
+            return;
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Service deletion failed:', error);
     }
-}
-
-// Initialize dashboard
+}// Initialize dashboard
 const adminDashboard = new AdminDashboard();

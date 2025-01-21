@@ -262,8 +262,23 @@ class StatusMonitorClient {
             </div>
         `).join('');
     }
-
+// Add this method inside the StatusMonitorClient class
+handleServiceUpdate(data) {
+    if (!data || !data.service) return;
+    
+    const serviceIndex = this.services.findIndex(s => s.name === data.service.name);
+    if (serviceIndex !== -1) {
+        this.services[serviceIndex] = data.service;
+    } else {
+        this.services.push(data.service);
+    }
+    
+    this.updateServiceDisplay(data.service);
+    this.updateOverallStats();
+    this.stats.messageCount++;
+}
 
 }
 // Initialize the client
 const statusMonitor = new StatusMonitorClient();
+

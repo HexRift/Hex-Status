@@ -19,7 +19,7 @@ async function errorHandler(err, req, res, next) {
             },
             URLs: {
                 github: settings?.urls?.github || '#',
-                thumbnail: settings?.urls?.thumbnail || 'https://hexmodz.com/assets/logo.png'
+                thumbnail: settings?.urls?.thumbnail || 'https://hexarion.net/Hex-Status.png'
             },
             theme: {
                 primary: settings?.theme?.primary || '#ff0000',

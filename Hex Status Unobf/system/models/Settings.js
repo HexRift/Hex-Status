@@ -13,7 +13,7 @@ const SettingsSchema = new mongoose.Schema({
     system: {
         port: { type: Number, default: 3000 },
         refresh_interval: { type: Number, default: 1000 },
-        version: { type: String, default: '12.0.0' }
+        version: { type: String, default: '13.0.0' }
     },
     theme: {
         primary: { type: String, default: '#ff0000' },
@@ -28,7 +28,8 @@ const SettingsSchema = new mongoose.Schema({
         uri: { type: String, default: 'mongodb://localhost:27017/Hex-Status' }
     },
     bot: {
-        token: { type: String, required: true }
+        token: { type: String, required: true },
+        status: { type: String,  default: 'Hex Status', required: true }
     }
 });
 

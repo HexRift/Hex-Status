@@ -32,13 +32,23 @@ async function sendStatusEmbed(interaction, { settings, client }) {
                 lastGraphUpdate = Date.now();
             }
 
-            await reply.edit(updates);
+            await reply.edit(updates).catch(async () => {
+                // If edit fails, try to send a new message
+                const newReply = await interaction.channel.send(updates);
+                reply = newReply;
+            });
         } catch (error) {
-            clearInterval(updateInterval);
+            console.log('Status update error:', error);
+            // Continue running despite errors - don't clear interval
         }
-    }, settings?.system?.refresh_interval || 5000);
-}
+    }, settings?.system?.refresh_interval || 1000);
 
+    // Store interval in client to prevent garbage collection
+    if (!client.statusIntervals) {
+        client.statusIntervals = new Set();
+    }
+    client.statusIntervals.add(updateInterval);
+}
 function calculateStatusMetrics(services) {
     return {
         onlineServices: services.filter(s => s.status),
@@ -58,6 +68,7 @@ function createEnhancedStatusEmbed({ onlineServices, totalServices, avgResponseT
         .setColor(statusColor)
         .setTitle('📊 Live Service Status')
         .setDescription(`${getStatusEmoji(onlineServices.length, totalServices)} **System Status:** ${getStatusMessage(onlineServices.length, totalServices)}`)
+        .setThumbnail(settings.urls?.thumbnail || null)
         .addFields(
             {
                 name: '🟢 Operational Services',

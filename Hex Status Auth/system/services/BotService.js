@@ -181,7 +181,7 @@ class BotService {
 
     updateStatus() {
         const serverCount = this.client.guilds.cache.size;
-        this.client.user.setActivity(`${this.settings.site.name} Servers`, {
+        this.client.user.setActivity(`${this.settings.bot.status} Servers`, {
             type: ActivityType.Watching
         });
     }

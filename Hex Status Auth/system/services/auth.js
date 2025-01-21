@@ -53,24 +53,21 @@ class AuthClient {
     #webhookManager;
     #PRODUCT_ID = '40';
     #API_BASE_URL = 'https://api.hexarion.net/api';
-    #currentVersion = '12.0.0'; // Hardcoded version
+    #currentVersion = '13.0.0';
     constructor() {
         this.#webhookManager = WebhookManager.getInstance();
     }
     async validateLicense() {
         try {
             const license = await License.findOne().sort({ _id: -1 });
-            console.log('[AUTH]'.cyan, 'Found license:', license?.key);
-            
+    
             if (!license?.key) {
                 console.log('[AUTH]'.brightRed, 'No license key found in database');
                 process.exit(1);
             }
-
+    
             const serverUrl = `${this.#API_BASE_URL}/check/${this.#PRODUCT_ID}`;
-
-            console.log('[AUTH]'.brightYellow, 'Sending authentication request...');
-
+    
             const response = await fetch(serverUrl, {
                 method: 'POST',
                 headers: {
@@ -78,54 +75,23 @@ class AuthClient {
                     'Authorization': license.key
                 }
             });
-
+    
             const data = await response.json();
-            if (!response.ok || data.status !== 'AUTHORISED' || !data.pass) {
-                console.log('[AUTH]'.brightRed, 'Authentication failed:', data.details || 'Invalid response from auth server');
+            
+            if (response.ok && data.status === 'AUTHORISED' && data.pass) {
+                console.log('[AUTH]'.green, `${data.details}`);
+                await this.#handleSuccessfulAuth(data.details);
+                return true;
+            } else {
+                console.log('[AUTH]'.brightRed, '✗ Authentication failed:', data.details || 'Invalid response from auth server');
                 await this.#handleFailedAuth(data.details || 'Authentication failed');
                 process.exit(1);
             }
-              await this.#handleSuccessfulAuth(data.details);
-              return true;
-          } catch (error) {
-              console.log('[AUTH]'.brightRed, 'Authentication error:', error.message);
-              await this.#handleAuthError(error.message);
-              process.exit(1);
-          }
-      }
-
-      async checkVersion() {
-        const https = require('https');
-        
-        return new Promise((resolve, reject) => {
-            https.get(`https://hexarion.net/api/version/check?version=${encodeURIComponent(this.#currentVersion)}&product=${this.#PRODUCT_ID}`, (res) => {
-                let data = '';
-
-                res.on('data', (chunk) => {
-                    data += chunk;
-                });
-
-                res.on('end', () => {
-                    try {
-                        const parsedData = JSON.parse(data);
-                        if (parsedData.same) {
-                            console.log('[UPDATER]'.green, 'Your Hex Status installation is up to date!');
-                        } else {
-                            console.log('[UPDATER]'.red, 'Your Hex Status installation is outdated');
-                            console.log('[UPDATER]'.yellow, 'Please update your Hex Status installation to the latest version.');
-                            process.exit(1);
-                        }
-                        resolve(parsedData);
-                    } catch (error) {
-                        console.log('[UPDATER]'.red, 'Version check failed:', error.message);
-                        reject(error);
-                    }
-                });
-            }).on('error', (error) => {
-                console.log('[UPDATER]'.red, 'Version check failed:', error.message);
-                reject(error);
-            });
-        });
+        } catch (error) {
+            console.log('[AUTH]'.brightRed, '✗ Authentication error:', error.message);
+            await this.#handleAuthError(error.message);
+            process.exit(1);
+        }
     }
 
     async #handleSuccessfulAuth(details) {
@@ -212,10 +178,9 @@ class AuthClient {
             }
         );
     }
-}async function Auth(version) {
-    const authClient = new AuthClient(version);
-    const versionCheck = await authClient.checkVersion();
-    const licenseCheck = await authClient.validateLicense();
-    return { versionCheck, licenseCheck };
+}async function Auth() {
+    const authClient = new AuthClient();
+    return await authClient.validateLicense();
 }
+
 module.exports = { Auth };

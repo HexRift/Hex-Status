@@ -50,15 +50,12 @@ class WebSocketService {
         });
         
         this.stats.connectedClients = this.clients.size;
-        console.log("[WebSocket]".cyan, `Client connected: ${socket.id}`);
-        
         await this.sendInitialState(socket);
     }
 
     static handleDisconnect(socket) {
         this.clients.delete(socket.id);
         this.stats.connectedClients = this.clients.size;
-        console.log("[WebSocket]".yellow, `Client disconnected: ${socket.id}`);
     }
 
     static async sendInitialState(socket) {
@@ -88,17 +85,40 @@ class WebSocketService {
         }, 2000);
     }
 
+    static calculateUptime(service) {
+        if (!service || typeof service.uptime === 'undefined') {
+            return 0;
+        }
+        return ((service.uptime / Math.max(service.checks, 1)) * 100).toFixed(2);
+    }
+
+    static broadcastServiceUpdate(service) {
+        if (!service) {
+            return;
+        }
+        
+        const serviceData = {
+            ...service,
+            uptime: this.calculateUptime(service)
+        };
+        
+        this.io.emit('serviceUpdate', {
+            service: serviceData
+        });
+    }
+
     static async broadcastUpdates() {
         try {
             const services = await Service.find().lean();
             const stats = await this.calculateSystemStats();
             
-            for (const service of services) {
-                const result = await MonitoringService.checkService(service);
-                const updatedService = await MonitoringService.updateServiceStatus(service);
-                
-                this.broadcastServiceUpdate(updatedService, result);
-            }
+            const validServices = services.filter(Boolean);
+            validServices.forEach(service => {
+                try {
+                    this.broadcastServiceUpdate(service);
+                } catch (error) {
+                }
+            });
 
             this.io.emit('statsUpdate', {
                 stats,
@@ -108,10 +128,8 @@ class WebSocketService {
             this.stats.lastUpdate = Date.now();
             this.stats.messagesSent++;
         } catch (error) {
-            console.error("[WebSocket]".red, "Broadcast error:", error);
         }
     }
-
     static broadcastServiceUpdate(service, result) {
         this.io.emit('serviceUpdate', {
             service,
@@ -159,16 +177,16 @@ class WebSocketService {
 
     static handleSubscribe(socket, room) {
         socket.join(room);
-        console.log("[WebSocket]".cyan, `Client ${socket.id} subscribed to ${room}`);
+        //console.log("[WebSocket]".cyan, `Client ${socket.id} subscribed to ${room}`);
     }
 
     static handleUnsubscribe(socket, room) {
         socket.leave(room);
-        console.log("[WebSocket]".yellow, `Client ${socket.id} unsubscribed from ${room}`);
+        //console.log("[WebSocket]".yellow, `Client ${socket.id} unsubscribed from ${room}`);
     }
 
     static handleError(socket, error) {
-        console.error("[WebSocket]".red, `Error for client ${socket.id}:`, error);
+     //   console.error("[WebSocket]".red, `Error for client ${socket.id}:`, error);
         socket.emit('error', {
             message: 'An error occurred',
             timestamp: Date.now()
@@ -182,7 +200,7 @@ class WebSocketService {
         
         if (this.io) {
             this.io.close();
-            console.log("[WebSocket]".yellow, "Service cleaned up");
+            //console.log("[WebSocket]".yellow, "Service cleaned up");
         }
     }
 }

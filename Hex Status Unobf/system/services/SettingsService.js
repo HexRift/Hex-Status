@@ -59,7 +59,7 @@ class SettingsService {
             system: {
                 port: 3000,
                 refresh_interval: 1000,
-                version: '12.0.0',
+                version: '13.0.0',
                 maxHistoryEntries: 50,
                 debugMode: false,
                 maintenance: false
@@ -85,25 +85,10 @@ class SettingsService {
             },
             bot: {
                 token: 'YOUR_BOT_TOKEN',
-                prefix: '!',
-                activity: 'monitoring services',
+                status: 'Hex Status',
                 embedColor: '#ff0000'
             },
-            notifications: {
-                discord: {
-                    enabled: true,
-                    webhookUrl: '',
-                    mentionRole: ''
-                },
-                email: {
-                    enabled: false,
-                    smtp: {
-                        host: '',
-                        port: 587,
-                        secure: true
-                    }
-                }
-            }
+            
         });
     }
 
@@ -119,7 +104,7 @@ class SettingsService {
     }
 
     static async mergeSettings(currentSettings, newSettings) {
-        const sections = ['theme', 'site', 'urls', 'system', 'mongodb', 'bot', 'notifications'];
+        const sections = ['theme', 'site', 'urls', 'system', 'mongodb', 'bot'];
         
         for (const section of sections) {
             if (newSettings[section]) {
@@ -148,7 +133,8 @@ class SettingsService {
             'system.port': 'number',
             'system.refresh_interval': 'number',
             'mongodb.uri': 'string',
-            'bot.token': 'string'
+            'bot.token': 'string',
+            'bot.status': 'string'
         };
 
         const errors = [];
