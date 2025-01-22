@@ -2,6 +2,8 @@ const { EmbedBuilder } = require('discord.js');
 const { Service } = require('../models');
 const { generateStatsGraph } = require('../utils/charts');
 
+const { StatusMessage } = require('../models');
+
 async function sendStatusEmbed(interaction, { settings, client }) {
     await interaction.deferReply();
     
@@ -15,41 +17,20 @@ async function sendStatusEmbed(interaction, { settings, client }) {
         files: [{ attachment: graphBuffer, name: 'status-graph.png' }]
     });
 
-    let lastGraphUpdate = Date.now();
-    const graphUpdateInterval = 60000 + Math.random() * 60000; // Random interval between 1-2 minutes
+    // Save to MongoDB
+    await StatusMessage.findOneAndUpdate(
+        { guildId: interaction.guildId },
+        {
+            channelId: interaction.channelId,
+            messageId: reply.id,
+            timestamp: new Date(),
+            guildId: interaction.guildId
+        },
+        { upsert: true }
+    );
 
-    const updateInterval = setInterval(async () => {
-        try {
-            const updatedServices = await Service.find().lean();
-            const updatedData = calculateStatusMetrics(updatedServices);
-            const updates = {
-                embeds: [createEnhancedStatusEmbed(updatedData, settings)]
-            };
-
-            if (Date.now() - lastGraphUpdate >= graphUpdateInterval) {
-                const newGraphBuffer = await generateStatsGraph(updatedServices, settings, 'status');
-                updates.files = [{ attachment: newGraphBuffer, name: 'status-graph.png' }];
-                lastGraphUpdate = Date.now();
-            }
-
-            await reply.edit(updates).catch(async () => {
-                // If edit fails, try to send a new message
-                const newReply = await interaction.channel.send(updates);
-                reply = newReply;
-            });
-        } catch (error) {
-            console.log('Status update error:', error);
-            // Continue running despite errors - don't clear interval
-        }
-    }, settings?.system?.refresh_interval || 1000);
-
-    // Store interval in client to prevent garbage collection
-    if (!client.statusIntervals) {
-        client.statusIntervals = new Set();
-    }
-    client.statusIntervals.add(updateInterval);
-}
-function calculateStatusMetrics(services) {
+    startStatusUpdates(client, interaction.channel, reply, settings);
+}function calculateStatusMetrics(services) {
     return {
         onlineServices: services.filter(s => s.status),
         totalServices: services.length,
@@ -118,3 +99,52 @@ const getDowntime = lastCheck => {
 };
 
 module.exports = { sendStatusEmbed };
+
+async function startStatusUpdates(client, channel, message, settings) {
+    let lastGraphUpdate = Date.now();
+    const graphUpdateInterval = 60000 + Math.random() * 60000;
+
+    const updateInterval = setInterval(async () => {
+        try {
+            const updatedServices = await Service.find().lean();
+            const updatedData = calculateStatusMetrics(updatedServices);
+            const updates = {
+                embeds: [createEnhancedStatusEmbed(updatedData, settings)]
+            };
+
+            if (Date.now() - lastGraphUpdate >= graphUpdateInterval) {
+                const newGraphBuffer = await generateStatsGraph(updatedServices, settings, 'status');
+                updates.files = [{ attachment: newGraphBuffer, name: 'status-graph.png' }];
+                lastGraphUpdate = Date.now();
+            }
+
+            await message.edit(updates).catch(async (error) => {
+                if (error.code === 10008) { // Message not found
+                    // Remove the entry from database
+                    await StatusMessage.findOneAndDelete({ 
+                        guildId: channel.guildId,
+                        messageId: message.id 
+                    });
+                    
+                    // Clear the interval
+                    clearInterval(updateInterval);
+                    if (client.statusIntervals) {
+                        client.statusIntervals.delete(updateInterval);
+                    }
+                }
+            });
+        } catch (error) {
+            console.log('Status update error:', error);
+        }
+    }, settings?.system?.refresh_interval || 1000);
+
+    if (!client.statusIntervals) {
+        client.statusIntervals = new Set();
+    }
+    client.statusIntervals.add(updateInterval);
+}
+
+module.exports = { 
+    sendStatusEmbed,
+    startStatusUpdates 
+};

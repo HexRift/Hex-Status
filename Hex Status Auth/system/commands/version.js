@@ -41,22 +41,48 @@ async function checkVersionCommand(interaction, { settings, client }) {
                 text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '13.0.0'}`,
                 iconURL: settings.urls.thumbnail  || null
             });
+          const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
-        if (versionData?.release?.changelog) {
-            const sections = versionData.release.changelog.split('##').filter(Boolean);
-            for (const section of sections) {
-                const [title, ...content] = section.split('\r\n');
-                const truncatedContent = content.join('\n').slice(0, 900) + (content.join('\n').length > 900 ? '...' : '');
-                versionEmbed.addFields({
-                    name: `📝 ${title.trim()}`,
-                    value: truncatedContent || 'No details available',
-                    inline: false
-                });
-            }
-        }
+          // Create button
+          const changelogButton = new ButtonBuilder()
+              .setCustomId('view_changelog')
+              .setLabel('View Changelog')
+              .setStyle(ButtonStyle.Primary)
+              .setEmoji('📝');
 
-        await interaction.editReply({ embeds: [versionEmbed] });
+          const row = new ActionRowBuilder().addComponents(changelogButton);
 
+          // Send initial message with button
+          await interaction.editReply({ embeds: [versionEmbed], components: [row] });
+
+          // Create button collector
+          const filter = i => i.customId === 'view_changelog' && i.user.id === interaction.user.id;
+          const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+
+          collector.on('collect', async i => {
+              const changelogEmbed = new EmbedBuilder()
+                  .setTitle(`🚀 ${client.user.username} Changelog Info`)
+                  .setThumbnail(settings.urls?.thumbnail || null)
+                  .setColor(settings.theme?.primary || '#007bff')
+                  .setTimestamp()
+                  .setFooter({
+                      text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '13.0.0'}`,
+                      iconURL: settings.urls.thumbnail  || null
+                  });
+              if (versionData?.release?.changelog) {
+                  const sections = versionData.release.changelog.split('##').filter(Boolean);
+                  for (const section of sections) {
+                      const [title, ...content] = section.split('\r\n');
+                      changelogEmbed.addFields({
+                          name: `📝 ${title.trim()}`,
+                          value: content.join('\n') || 'No details available',
+                          inline: false
+                      });
+                  }
+              }
+    
+              await i.reply({ embeds: [changelogEmbed], ephemeral: true });
+          });
     } catch (error) {
         const errorEmbed = new EmbedBuilder()
             .setColor('#ff0000')
