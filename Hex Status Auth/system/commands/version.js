@@ -10,7 +10,7 @@ async function checkVersionCommand(interaction, { settings, client }) {
     try {
         const versionData = await new Promise((resolve, reject) => {
             
-            https.get(`https://hexarion.net/api/version/check?version=${encodeURIComponent('13.0.0')}&product=40`, (res) => {
+            https.get(`https://hexarion.net/api/version/check?version=${encodeURIComponent('14.0.0')}&product=40`, (res) => {
                 let data = '';
                 res.on('data', (chunk) => data += chunk);
                 res.on('end', () => {
@@ -30,15 +30,15 @@ async function checkVersionCommand(interaction, { settings, client }) {
             .addFields({
                 name: '📊 Version Information',
                 value: [
-                    `**Current Version:** v13.0.0`,
-                    `**Latest Version:** v${versionData?.release?.version || '13.0.0'}`,
+                    `**Current Version:** 14.0.0`,
+                    `**Latest Version:** v${versionData?.release?.version || '14.0.0'}`,
                     `**Status:** ${versionData?.same ? '✅ Up to date' : '⚠️ Update required'}`
                 ].join('\n'),
                 inline: false
             })
             .setTimestamp()
             .setFooter({
-                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '13.0.0'}`,
+                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
                 iconURL: settings.urls.thumbnail  || null
             });
           const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
@@ -66,7 +66,7 @@ async function checkVersionCommand(interaction, { settings, client }) {
                   .setColor(settings.theme?.primary || '#007bff')
                   .setTimestamp()
                   .setFooter({
-                      text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '13.0.0'}`,
+                      text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
                       iconURL: settings.urls.thumbnail  || null
                   });
               if (versionData?.release?.changelog) {
@@ -91,7 +91,7 @@ async function checkVersionCommand(interaction, { settings, client }) {
             .setDescription(`Error: ${error.message}`)
             .setTimestamp()
             .setFooter({
-                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '10.0.0'}`,
+                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
                 iconURL: settings.urls.thumbnail  || null
             });
 

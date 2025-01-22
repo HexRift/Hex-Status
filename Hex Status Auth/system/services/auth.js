@@ -53,7 +53,7 @@ class AuthClient {
     #webhookManager;
     #PRODUCT_ID = '40';
     #API_BASE_URL = 'https://api.hexarion.net/api';
-    #currentVersion = '13.0.0';
+    #currentVersion = '14.0.0';
     constructor() {
         this.#webhookManager = WebhookManager.getInstance();
     }

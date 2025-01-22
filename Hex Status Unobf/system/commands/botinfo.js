@@ -99,7 +99,7 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
             )
             .setTimestamp()
             .setFooter({
-                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '13.0.0'}`,
+                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
                 iconURL: settings.urls.thumbnail  || null
             });
 

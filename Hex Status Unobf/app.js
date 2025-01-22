@@ -13,7 +13,7 @@ const figlet = require("figlet");
 
 class HexStatus {
     #PRODUCT_ID = '40';
-    #currentVersion = '13.0.0';
+    #currentVersion = '14.0.0';
     constructor() {
         this.botService = null;
         this.server = null;
