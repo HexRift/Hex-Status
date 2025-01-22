@@ -1,35 +1,47 @@
 const { EmbedBuilder } = require('discord.js');
 
 async function sendHelpEmbed(interaction, { settings, client }) {
+    // Get command IDs
+    const statusCommand = client.application.commands.cache.find(cmd => cmd.name === 'status');
+    const statsCommand = client.application.commands.cache.find(cmd => cmd.name === 'stats');
+    const pingCommand = client.application.commands.cache.find(cmd => cmd.name === 'ping');
+    const botinfoCommand = client.application.commands.cache.find(cmd => cmd.name === 'botinfo');
+    const versioninfoCommand = client.application.commands.cache.find(cmd => cmd.name === 'version');
+    const helpCommand = client.application.commands.cache.find(cmd => cmd.name === 'help');
+
     const helpEmbed = new EmbedBuilder()
         .setColor(settings.theme?.primary || '#007bff')
         .setTitle(`🎮 ${client.user.username} Commands`)
-        .setDescription('Explore the powerful features of Hex Status through these commands:')
+        .setDescription('Click on any command below to execute it:')
         .setThumbnail(settings.urls?.thumbnail || null)
         .addFields({
-            name: '📊 /status',
-            value: 'View real-time status of all monitored services\n• Response times\n• Uptime statistics\n• System health',
+            name: '📊 Status Monitoring',
+            value: `</status:${statusCommand?.id}>`,
             inline: false
         }, {
-            name: '📈 /stats',
-            value: 'Generate detailed performance graphs\n• Historical data\n• Response time trends\n• Visual analytics',
+            name: '📈 Statistics & Analytics',
+            value: `</stats:${statsCommand?.id}>`,
             inline: false
         }, {
-            name: '🏓 /ping',
-            value: 'Check detailed latency metrics\n• Bot latency\n• API response\n• Database status',
+            name: '🏓 Network Diagnostics',
+            value: `</ping:${pingCommand?.id}>`,
             inline: false
         }, {
-            name: '🤖 /botinfo',
-            value: 'View comprehensive bot statistics\n• System resources\n• Performance metrics\n• Service overview',
+            name: '🤖 System Information',
+            value: `</botinfo:${botinfoCommand?.id}>`,
             inline: false
         }, {
-            name: '❓ /help',
-            value: 'Display this help menu with detailed command information',
+            name: '🚀 Version Information',
+            value: `</version:${versioninfoCommand?.id}>`,
+            inline: false
+        }, {
+            name: '❓ Help Center',
+            value: `</help:${helpCommand?.id}>`,
             inline: false
         })
         .setTimestamp()
         .setFooter({
-            text: `${settings.site?.footer || 'Hex Status'} • Version ${settings.system?.version || '9.0.0'}`,
+            text: `${settings.site?.footer || 'Hex Status'} • Version ${settings.system?.version || '13.0.0'}`,
             iconURL: settings.urls?.thumbnail || null
         });
 

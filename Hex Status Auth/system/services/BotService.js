@@ -5,6 +5,7 @@ const { handleStatsCommand } = require('../commands/stats');
 const { sendHelpEmbed } = require('../commands/help');
 const { handlePingCommand } = require('../commands/ping');
 const { handleBotInfoCommand } = require('../commands/botinfo');
+const { checkVersionCommand } = require('../commands/version');
 
 class BotService {
     constructor(settings) {
@@ -71,6 +72,15 @@ class BotService {
             execute: handleBotInfoCommand,
             cooldown: 10
         });
+
+        this.commands.set('version', {
+            builder: new SlashCommandBuilder()
+                .setName('version')
+                .setDescription('Check for hex status updates and display version information'),
+            execute: checkVersionCommand,
+            cooldown: 10
+        });
+        
     }
 
     async initialize() {

@@ -34,14 +34,14 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
         .setDescription(`Advanced monitoring system v${version}`)
         .setThumbnail(thumbnail)        .addFields(
             {
-                name: '🤖 Bot Stats',
+                name: '🤖 Bot',
                 value: [
                     `**Status:** ${interaction.client.user.presence.status}`,
                     `**Latency:** ${Math.round(interaction.client.ws.ping)}ms`,
                     `**Uptime:** ${formatUptime(process.uptime())}`,
                     `**Commands:** ${interaction.client.application.commands.cache.size}`
                 ].join('\n'),
-                inline: false
+                inline: true
             },
             {
                 name: '💻 System',
@@ -51,7 +51,7 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
                     `**Node.js:** ${process.version}`,
                     `**Platform:** ${process.platform} ${process.arch}`
                 ].join('\n'),
-                inline: false
+                inline: true
             },
             {
                 name: '📡 Services',
@@ -61,7 +61,7 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
                     `**Total Checks:** ${totalChecks.toLocaleString()}`,
                     `**Avg Response:** ${Math.round(avgResponseTime)}ms`
                 ].join('\n'),
-                inline: false
+                inline: true
             },
                 // Performance
                 {
@@ -72,7 +72,7 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
                         `**Database:** ${mongoose.connection.readyState === 1 ? '🟢 Connected' : '🔴 Disconnected'}`,
                         `**Cache Size:** ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`
                     ].join('\n'),
-                    inline: false
+                    inline: true
                 },
                 // Security
                 {
@@ -83,7 +83,7 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
                         `**Session Length:** 7 days`,
                         `**Last Update:** ${new Date().toLocaleDateString()}`
                     ].join('\n'),
-                    inline: false
+                    inline: true
                 },
                 // Dependencies
                 {
@@ -94,12 +94,12 @@ async function handleBotInfoCommand(interaction, { client, settings }) {
                         `**Express:** Latest`,
                         `**Socket.IO:** Latest`
                     ].join('\n'),
-                    inline: false
+                    inline: true
                 }
             )
             .setTimestamp()
             .setFooter({
-                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '10.0.0'}`,
+                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '13.0.0'}`,
                 iconURL: settings.urls.thumbnail  || null
             });
 
