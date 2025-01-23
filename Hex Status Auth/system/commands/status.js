@@ -48,8 +48,14 @@ function createEnhancedStatusEmbed({ onlineServices, totalServices, avgResponseT
     return new EmbedBuilder()
         .setColor(statusColor)
         .setTitle('📊 Live Service Status')
-        .setDescription(`${getStatusEmoji(onlineServices.length, totalServices)} **System Status:** ${getStatusMessage(onlineServices.length, totalServices)}`)
         .setThumbnail(settings.urls?.thumbnail || null)
+        .addFields(
+            {
+                name: `${getStatusEmoji(onlineServices.length, totalServices)} Status: `,
+                value: `${getStatusMessage(onlineServices.length, totalServices)}`,
+                inline: false
+            },
+        )
         .addFields(
             {
                 name: '🟢 Operational Services',
@@ -80,8 +86,8 @@ function createEnhancedStatusEmbed({ onlineServices, totalServices, avgResponseT
             text: `${settings?.site?.footer || 'Hex Status'} • Live Updates`,
             iconURL: settings?.urls?.thumbnail || null
         });
-}
 
+}
 const getStatusColor = (online, total) =>
     online === total ? '#00ff00' : online === 0 ? '#ff0000' : '#ffaa00';
 
