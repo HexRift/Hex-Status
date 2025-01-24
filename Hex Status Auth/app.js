@@ -13,8 +13,8 @@ const figlet = require("figlet");
 const { Auth } = require('./system/services/auth');
 
 class HexStatus {
-    #PRODUCT_ID = '40';
-    #currentVersion = '14.0.0';
+    #PRODUCT_ID = "Hex Status";
+    #currentVersion = "14.0.0";
     constructor() {
         this.botService = null;
         this.server = null;
@@ -57,33 +57,50 @@ class HexStatus {
                 console.log("[System]".green, "Hex Status:", 'Initialized');
                 
             // Check version right after banner
-            const https = require('https');
-            await new Promise((resolve, reject) => {
-                https.get(`https://hexarion.net/api/version/check?version=${encodeURIComponent(this.#currentVersion)}&product=${this.#PRODUCT_ID}`, (res) => {
-                    let data = '';
-                    res.on('data', (chunk) => {
-                        data += chunk;
-                    });
-                    res.on('end', () => {
-                        try {
-                            const parsedData = JSON.parse(data);
-                            if (parsedData.same) {
-                                console.log('[Updater]'.green, `Hex Status (v${this.#currentVersion}) is up to date!`);
-                            } else {
-                                console.log('[Updater]'.red, `Hex Status (v${this.#currentVersion}) is outdated. Update to v${parsedData.release?.version}.`);
-                                process.exit(1);
-                            }
-                            resolve(parsedData);
-                        } catch (error) {
-                            console.log('[Updater]'.red, 'Hex Status update check failed:', error.message);
-                            reject(error);
-                        }
-                    });
-                }).on('error', (error) => {
-                    console.log('[Updater]'.red, 'Version check failed:', error.message);
-                    reject(error);
-                });
-            });
+            const axios = require("axios");
+
+            // Inside startServer() method:
+            try {
+              const response = await axios.get(
+                `https://hexarion.net/api/version/${this.#PRODUCT_ID}?current=${
+                  this.#currentVersion
+                }`,
+                {
+                  headers: {
+                    "x-api-key": "8IOLaAYzGJNwcYb@bm1&WOcr%aK5!O",
+                  },
+                }
+              );
+    
+              if (!response.data.version) {
+                console.log(
+                  "[Updater]".yellow,
+                  "Version information not available"
+                );
+                return;
+              }
+    
+              if (response.data.same) {
+                console.log(
+                  "[Updater]".green,
+                  `Hex Status (v${this.#currentVersion}) is up to date!`
+                );
+              } else {
+                console.log(
+                  "[Updater]".red,
+                  `Hex Status (v${this.#currentVersion}) is outdated. Update to v${
+                    response.data.version
+                  }.`
+                );
+                process.exit(1);
+              }
+            } catch (error) {
+              console.log(
+                "[Updater]".red,
+                "Version check failed:",
+                error.response?.data?.error || error.message
+              );
+            }
                 console.log("[System]".yellow, "Server:", `Running on port ${PORT}`);
             });
 

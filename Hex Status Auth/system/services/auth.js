@@ -51,7 +51,7 @@ class WebhookManager {
 
 class AuthClient {
     #webhookManager;
-    #PRODUCT_ID = '40';
+    #PRODUCT_ID = '1';
     #API_BASE_URL = 'https://api.hexarion.net/api';
     #currentVersion = '14.0.0';
     constructor() {
