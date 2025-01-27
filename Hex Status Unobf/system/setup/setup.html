@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex Status Setup</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1>Hex Status Setup</h1>
+            <div class="progress-bar">
+                <div class="progress" id="setupProgress"></div>
+            </div>
+        </div>
+
+        <div class="setup-content">
+            <!-- Step 1: Database -->
+            <div class="setup-step" id="step1">
+                <h2>Database Configuration</h2>
+                <div class="form-group">
+                    <input type="text" id="mongoUri" placeholder="MongoDB URI" value="mongodb://localhost:27017/Hex-Status">
+                    <button class="test-connection" onclick="testConnection()">Test Connection</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Site Settings -->
+            <div class="setup-step hidden" id="step2">
+                <h2>Site Configuration</h2>
+                <div class="form-group">
+                    <input type="text" id="siteName" placeholder="Site Name" value="Hex Status">
+                    <input type="text" id="siteDescription" placeholder="Site Description" value="Real-time Service Status Monitor">
+                    <input type="text" id="siteFooter" placeholder="Footer Text" value="Hex Status">
+                    <input type="number" id="sitePort" placeholder="Port Number" value="3000">
+                    <input type="text" id="JWT_SECRET" placeholder="JWT Secret">
+                    <input type="number" id="refresh_interval" placeholder="Refresh Interval (ms)" value="1000">
+                </div>
+            </div>
+
+            <!-- Step 3: Theme -->
+            <div class="setup-step hidden" id="step3">
+                <h2>Theme Settings</h2>
+                <div class="form-group color-inputs">
+                    <div class="color-input">
+                        <label>Primary Color</label>
+                        <input type="color" id="primaryColor" value="#ff0000" onchange="updateThemePreview()">
+                    </div>
+                    <div class="color-input">
+                        <label>Secondary Color</label>
+                        <input type="color" id="secondaryColor" value="#000000" onchange="updateThemePreview()">
+                    </div>
+                    <div class="color-input">
+                        <label>Accent Color</label>
+                        <input type="color" id="accentColor" value="#ff3333" onchange="updateThemePreview()">
+                    </div>
+                    <div class="color-input">
+                        <label>Background Color</label>
+                        <input type="color" id="backgroundColor" value="#1a1a1a" onchange="updateThemePreview()">
+                    </div>
+                </div>
+                <div class="theme-preview" id="themePreview">
+                    Theme Preview
+                </div>
+            </div>
+
+            <!-- Step 4: Bot Configuration -->
+            <div class="setup-step hidden" id="step4">
+                <h2>Discord Bot Configuration</h2>
+                <div class="form-group">
+                    <input type="text" id="botToken" placeholder="Bot Token">
+                    <input type="text" id="botStatus" placeholder="Bot Status Text" value="Hex Status">
+                </div>
+            </div>
+
+            <!-- Step 5: Admin Account -->
+            <div class="setup-step hidden" id="step5">
+                <h2>Create Admin Account</h2>
+                <div class="form-group">
+                    <input type="text" id="adminUsername" placeholder="Username">
+                    <input type="email" id="adminEmail" placeholder="Email">
+                    <input type="password" id="adminPassword" placeholder="Password">
+                    <input type="password" id="adminPasswordConfirm" placeholder="Confirm Password">
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-footer">
+            <button class="btn" id="prevBtn" onclick="prevStep()">Previous</button>
+            <button class="btn primary" id="nextBtn" onclick="nextStep()">Next</button>
+        </div>
+    </div>
+    <script src="./setup-client.js"></script>
+</body>
+</html>
