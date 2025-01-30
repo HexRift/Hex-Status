@@ -2,6 +2,7 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
+
 class SetupWizard {
   constructor() {
     this.packageJson = this.loadPackageJson();
@@ -23,6 +24,8 @@ class SetupWizard {
     const figlet = require("figlet");
     const mongoose = require("mongoose");
     const Settings = require("./system/models/Settings");
+    const yaml = require('js-yaml');
+    const fs = require('fs');
 
     await this.displayWelcome(chalk, figlet);
 
@@ -55,9 +58,9 @@ class SetupWizard {
               if (!input) return 'License key is required';
             
               try {
-                  const License = require('./system/models/License');
-                  // First save the key so auth-api can find it
-                  await License.create({ key: input });
+                  // Save to config.yml temporarily
+                  const config = { auth: { license_key: input } };
+                  fs.writeFileSync('license.yml', yaml.dump(config));
                 
                   const { Auth } = require('./system/services/auth');
                   const authResult = await Auth();
@@ -67,12 +70,12 @@ class SetupWizard {
                       return true;
                   }
                 
-                  // Remove invalid key
-                  await License.deleteOne({ key: input });
+                  // Remove invalid key by writing empty license
+                  fs.writeFileSync('license.yml', yaml.dump({ auth: { license_key: '' } }));
                   return 'Invalid license key. Please check your key and try again.';
               } catch (error) {
-                  const License = require('./system/models/License');
-                  await License.deleteOne({ key: input });
+                  // Clean up on error
+                  fs.writeFileSync('license.yml', yaml.dump({ auth: { license_key: '' } }));
                   return 'Failed to verify license key. Please check your internet connection.';
               }
           }

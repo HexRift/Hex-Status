@@ -59,7 +59,7 @@ class SettingsService {
             system: {
                 port: 3000,
                 refresh_interval: 1000,
-                version: '14.0.0',
+                version: '15.0.0',
                 maxHistoryEntries: 50,
                 debugMode: false,
                 maintenance: false

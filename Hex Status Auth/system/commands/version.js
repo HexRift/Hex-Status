@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const axios = require('axios');
 const PRODUCT_ID = "Hex Status";
-const currentVersion = "14.0.0";
+const currentVersion = "15.0.0";
 
 async function checkVersionCommand(interaction, { settings, client }) {
     if (!interaction.deferred && !interaction.replied) {
@@ -28,14 +28,14 @@ async function checkVersionCommand(interaction, { settings, client }) {
                 name: '📊 Version Information',
                 value: [
                     `**Current Version:** ${currentVersion}`,
-                    `**Latest Version:** v${versionData?.version || '14.0.0'}`,
+                    `**Latest Version:** v${versionData?.version || '15.0.0'}`,
                     `**Status:** ${versionData?.same ? '✅ Up to date' : '⚠️ Update required'}`
                 ].join('\n'),
                 inline: false
             })
             .setTimestamp()
             .setFooter({
-                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
+                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '15.0.0'}`,
                 iconURL: settings.urls.thumbnail || null
             });
 
@@ -64,7 +64,7 @@ async function checkVersionCommand(interaction, { settings, client }) {
             .setDescription(`Error: ${error.response?.data?.error || error.message}`)
             .setTimestamp()
             .setFooter({
-                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
+                text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '15.0.0'}`,
                 iconURL: settings.urls.thumbnail || null
             });
 
@@ -79,7 +79,7 @@ function createChangelogEmbed(client, settings, versionData) {
         .setColor(settings.theme?.primary || '#007bff')
         .setTimestamp()
         .setFooter({
-            text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
+            text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '15.0.0'}`,
             iconURL: settings.urls.thumbnail || null
         });
 

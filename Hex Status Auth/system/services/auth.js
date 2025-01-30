@@ -1,7 +1,10 @@
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const { EmbedBuilder, WebhookClient } = require('discord.js');
 const colors = require('colors');
-const mongoose = require('mongoose');
+const yaml = require('js-yaml');
+const fs = require('fs');
+const path = require('path');
+
 const License = require('../models/License');
 
 class WebhookManager {
@@ -53,31 +56,34 @@ class AuthClient {
     #webhookManager;
     #PRODUCT_ID = '1';
     #API_BASE_URL = 'https://api.hexarion.net/api';
-    #currentVersion = '14.0.0';
+    #currentVersion = '15.0.0';
     constructor() {
         this.#webhookManager = WebhookManager.getInstance();
     }
+
     async validateLicense() {
         try {
-            const license = await License.findOne().sort({ _id: -1 });
-    
-            if (!license?.key) {
-                console.log('[AUTH]'.brightRed, 'No license key found in database');
+            const configPath = path.join(__dirname, '../../license.yml');
+            const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
+            const licenseKey = config.auth.license_key;
+
+            if (!licenseKey) {
+                console.log('[AUTH]'.brightRed, 'No license key found in config');
                 process.exit(1);
             }
-    
+
             const serverUrl = `${this.#API_BASE_URL}/check/${this.#PRODUCT_ID}`;
-    
+
             const response = await fetch(serverUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': license.key
+                    'Authorization': licenseKey
                 }
             });
-    
+
             const data = await response.json();
-            
+        
             if (response.ok && data.status === 'AUTHORISED' && data.pass) {
                 console.log('[AUTH]'.green, `${data.details}`);
                 await this.#handleSuccessfulAuth(data.details);
@@ -93,7 +99,6 @@ class AuthClient {
             process.exit(1);
         }
     }
-
     async #handleSuccessfulAuth(details) {
         await this.#webhookManager.sendLog(
             'Authorization Successful',
