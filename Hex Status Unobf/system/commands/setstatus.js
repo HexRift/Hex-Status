@@ -50,7 +50,7 @@ async function handleSetStatusCommand(interaction, { client, settings }) {
         )
         .setTimestamp()
         .setFooter({
-            text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '14.0.0'}`,
+            text: `${settings.site.footer || 'Hex Status'} • Version ${settings.site.version || '15.0.0'}`,
             iconURL: settings.urls.thumbnail  || null
         });
 
