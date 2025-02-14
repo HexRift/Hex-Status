@@ -1,11 +1,9 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const axios = require('axios');
 const { EmbedBuilder, WebhookClient } = require('discord.js');
 const colors = require('colors');
 const yaml = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
-
-const License = require('../models/License');
 
 class WebhookManager {
     static #instance;
@@ -54,9 +52,10 @@ class WebhookManager {
 
 class AuthClient {
     #webhookManager;
-    #PRODUCT_ID = '1';
-    #API_BASE_URL = 'https://api.hexarion.net/api';
     #currentVersion = '15.0.0';
+    #API_URL = 'https://api.hexarion.net/api/client';
+    #API_KEY = '4grS$Ff#Mmr8&A6k1kY&J#hu$Ud316D37WUAFkXTJcC%g';
+
     constructor() {
         this.#webhookManager = WebhookManager.getInstance();
     }
@@ -72,25 +71,27 @@ class AuthClient {
                 process.exit(1);
             }
 
-            const serverUrl = `${this.#API_BASE_URL}/check/${this.#PRODUCT_ID}`;
-
-            const response = await fetch(serverUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': licenseKey
+            const response = await axios.post(
+                this.#API_URL,
+                {
+                    license: licenseKey,
+                    product: 'Hex-Status',
+                    version: this.#currentVersion
+                },
+                { 
+                    headers: { 
+                        Authorization: this.#API_KEY 
+                    } 
                 }
-            });
+            );
 
-            const data = await response.json();
-        
-            if (response.ok && data.status === 'AUTHORISED' && data.pass) {
-                console.log('[AUTH]'.green, `${data.details}`);
-                await this.#handleSuccessfulAuth(data.details);
+            if (response.data?.status_overview === 'success' && response.data?.status_code === 200) {
+                console.log('[AUTH]'.green, 'License validated successfully');
+                await this.#handleSuccessfulAuth('License validated successfully');
                 return true;
             } else {
-                console.log('[AUTH]'.brightRed, '✗ Authentication failed:', data.details || 'Invalid response from auth server');
-                await this.#handleFailedAuth(data.details || 'Authentication failed');
+                console.log('[AUTH]'.brightRed, '✗ Authentication failed:', response.data?.message || 'Invalid response from auth server');
+                await this.#handleFailedAuth(response.data?.message || 'Authentication failed');
                 process.exit(1);
             }
         } catch (error) {
@@ -99,6 +100,7 @@ class AuthClient {
             process.exit(1);
         }
     }
+
     async #handleSuccessfulAuth(details) {
         await this.#webhookManager.sendLog(
             'Authorization Successful',
@@ -115,7 +117,7 @@ class AuthClient {
             },
             {
                 name: 'Version',
-                value: `${this.#currentVersion}`,
+                value: this.#currentVersion,
                 inline: true
             }], {
                 title: 'Authentication Success',
@@ -140,7 +142,7 @@ class AuthClient {
             },
             {
                 name: 'Version',
-                value: `${this.#currentVersion}`,
+                value: this.#currentVersion,
                 inline: true
             },
             {
@@ -170,7 +172,7 @@ class AuthClient {
             },
             {
                 name: 'Version',
-                value: `${this.#currentVersion}`,
+                value: this.#currentVersion,
                 inline: true
             },
             {
@@ -183,7 +185,9 @@ class AuthClient {
             }
         );
     }
-}async function Auth() {
+}
+
+async function Auth() {
     const authClient = new AuthClient();
     return await authClient.validateLicense();
 }
