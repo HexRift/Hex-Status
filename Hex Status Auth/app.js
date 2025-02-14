@@ -14,7 +14,7 @@ const { Auth } = require('./system/services/auth');
 
 class HexStatus {
     #PRODUCT_ID = "Hex Status";
-    #currentVersion = "15.0.0";
+    #currentVersion = "15.1.1";
     constructor() {
         this.botService = null;
         this.server = null;

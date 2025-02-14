@@ -1,3 +1,4 @@
+
 const axios = require('axios');
 const { EmbedBuilder, WebhookClient } = require('discord.js');
 const colors = require('colors');
@@ -52,7 +53,7 @@ class WebhookManager {
 
 class AuthClient {
     #webhookManager;
-    #currentVersion = '15.0.0';
+    #currentVersion = '15.1.1';
     #API_URL = 'https://api.hexarion.net/api/client';
     #API_KEY = '4grS$Ff#Mmr8&A6k1kY&J#hu$Ud316D37WUAFkXTJcC%g';
 
