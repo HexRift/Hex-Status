@@ -40,5 +40,5 @@ For continued support, new features, and improved stability, switch to **Hex Sta
 
 ---
 
-## 📢 Wallace - Now Publicly Available
+## 📢 While - Now Publicly Available
 while this is now publicly available for free. However, it is still under copyright, and you cannot claim it as your own work.
