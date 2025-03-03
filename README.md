@@ -1,6 +1,6 @@
 # 📢 Hex Status - Discontinued
 
-**This project has been replaced by [Hex Status 2.0](https://hexarion.net/products/Hex-Status-20)**
+**This project has been replaced by [Hex Status 2.0](https://hexrift.net/products/Hex-Status-20)**
 
 Hex Status was the ultimate real-time service monitoring solution designed for modern systems. While this version has been **discontinued**, we have introduced **Hex Status 2.0**, a more advanced, efficient, and secure successor.
 
@@ -14,7 +14,7 @@ Hex Status 2.0 builds upon its predecessor with:
 ✔️ **Advanced Discord Integration** – More interactive bot commands and live service embeds.  
 ✔️ **Optimized Performance & Security** – Faster response times, modular architecture, and robust authentication.  
 
-🔗 **Upgrade now to [Hex Status 2.0](https://hexarion.net/products/Hex-Status-20)** and experience next-level service monitoring!
+🔗 **Upgrade now to [Hex Status 2.0](https://hexrift.net/products/Hex-Status-20)** and experience next-level service monitoring!
 
 ---
 
@@ -36,7 +36,7 @@ Hex Status provided a feature-rich service monitoring solution with real-time in
 ## ⚡ Upgrade to Hex Status 2.0
 For continued support, new features, and improved stability, switch to **Hex Status 2.0** today!
 
-🔗 [Get Hex Status 2.0](https://hexarion.net/products/Hex-Status-20)
+🔗 [Get Hex Status 2.0](https://hexrift.net/products/Hex-Status-20)
 
 ---
 
